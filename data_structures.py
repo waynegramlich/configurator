@@ -15,7 +15,7 @@ import sys
 import re
 import xml.etree.ElementTree as ET
 
-## @class Node class
+## @class Node
 #
 # Base class for tree displayable objects.
 #
@@ -24,13 +24,20 @@ import xml.etree.ElementTree as ET
 
 class Node:
 
-    ## Constructor
+    ## @brief *Node* Constructor
+    # @param self       *Node* object being initialized.
+    # @param class_name *str* The textual name of the sub-class.
+    # @param text	*str* Text to show on tree widget
+    # @param icon_name  *str* Name of the icon to show next to object (or None).
+    # @param sub_nodes  *list* The list of sub-class object under this *Node*.
+    # @param style      *Style* object used for formatting.
     #
-    # @param self	The *Node* object being initialized.
-    # @param class_name	The textual name of the sub-class.
-    # @param icon_name	The name of the icon to show next to object (or None).
-    # @parem sub_nodes	The list of sub-class object under this *Node*.
-    # @param style	A global *Style* object used for formatting.
+    # This method initializes *Node* with the *class_name* (e.g.
+    # "Module_Use", "Selection", etc.), the icon name from the
+    # Icons directory, *sub_nodes* which is a list of *Node*
+    # object that constitute the children of *self*, and *style*
+    # which is a *Style* object that specifies the format of
+    # generated code.
 
     def __init__(self, class_name, text, icon_name, sub_nodes, style):
 
@@ -54,6 +61,7 @@ class Node:
     ## @brief Recursively find parent of *self* starting from *root_node*.
     #  @param self *Node* object to find parent of.
     #  @param root_node *Node* object to start search from
+    #  @result The parent *Node* object (or *None* if not found.)
     #
     # Since the *Node* class does not maintain parent back pointers,
     # finding a parent object actually requires a recursive search
@@ -92,11 +100,14 @@ class Node:
     ## @brief Method print *self* indented by *indent*.
     #  @param self *Node* object to write out.
     #  @param indent *int* that specifies how much to indent by.
-    #  @param out_stream *File* that specifies an output stream to write to.
     #
     # This provides a quick and dirty interface for debugging.
 
     def show(self, indent):
+
+	# Check argument types:
+	assert isinstance(indent, int)
+
 	print "{0}{1}:{2}".format("  " * indent, self.class_name, self.name)
 	sub_nodes = self.sub_nodes
 	if sub_nodes != None:
@@ -111,8 +122,8 @@ class Node:
     # sub nodes of *self*.
 
     def sub_node_append(self, sub_node):
-	""" Node: Append *sub_node* to the sub nodes of *self*. """
 
+	# Check argument types:
 	assert isinstance(sub_node, Node)
 
 	sub_nodes = self.sub_nodes
@@ -132,6 +143,10 @@ class Node:
 
     def xml_write(self, indent, out_stream):
 
+	# Check argument types:
+	assert isinstance(indent, int)
+	assert isinstance(out_stream, File)
+
 	print self
 	assert False, "No write method for {0} Node". format(str(type(self)))
 
@@ -149,17 +164,37 @@ class Node:
 
 class Classification():
 
+    ## @brief *Classification* constructor
+    #  @param self *Classification* object to initialize
+    #  @param classification_element *Element* tree element to read from
+    #  @param style *Style* object to control generated code formatting.
+    #
+    # This method will extract the classification information from
+    # the XML *classification_element* and store the result into *self*.
+
     def __init__(self, classification_element, style):
 
+	# Check argument types:
+	assert isinstance(classification_element, ET.Element)
+	assert classification_element.tag == "Classification"
+	assert isinstance(style, Style)
+
+	# Get the attributes
 	attributes = classification_element.attrib
+
+	# Iterate through each of the 10 possible level attributes
+	# and append the values to *levels*:
 	levels = []
 	for index in range(1, 10):
 	    level_name = "Level{0}".format(index)
 	    if level_name in attributes:
+		# Found one, append it to *levels*
 		levels.append(attributes[level_name])
 	    else:
+		# No more Level attributes, we are done:
 		break
 	    
+	# Stash the values away in to *self*:
 	self.levels = levels
 	self.style = style
 
@@ -177,21 +212,37 @@ class Classification():
 # in the XML file.
 
 class Description:
-    """ Description: This class represents a module description"""
+
+    ## @brief *Description* Constructor
+    #  @param description_element *Element* that contains the Description XML
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # Initialize a *Description* object using *description_element*
+    # for the XML information and *style* for the formatting style.
 
     def __init__(self, description_element, style):
-	""" Description: Initialize *self* from *description_element*. """
 
+	# Check argument types:
+	assert isinstance(description_element, ET.Element)
 	assert description_element.tag == "Description", \
 	  "Need <Description> tag"
+	assert isinstance(style, Style)
 
+	# Load up *self*:
 	self.style = style
 	self.text = description_element.text
 
+    ## @brief Return the *Description* object from *parent_element*
+    #  @param parent_element *Element* parent containing XML description
+    #  @param style *Style* object that specifies how to format generate code.
+    #  @result *Description* extracted from *parent_element*
+    #
+    # This static method is responsible for ensuring that there is one
+    # and only one <Description ...> tag underneight *parent_element*.
+    # The resulting *Description* is returned.
+
     @staticmethod
     def extract(parent_element, style):
-	""" Description: Return *Description* extracted from
-	    *parent_element*. """
 
 	# Extract all *descriptions* from *parent_element*:
 	descriptions = []
@@ -199,10 +250,12 @@ class Description:
 	    descriptions.append(Description(description_element, style))
 
 	# Make sure there is exacty one *description*:
-	description = None
 	if len(descriptions) == 1:
+	    # We have exactly one; return it:
 	    description = descriptions[0]
 	else:
+	    # We either have none, or more than one, generate error message:
+	    description = None
 	    print "{0}:<{1} Name='{2}'...> has {3} <Description> tags". \
 	      format(XML.line_number(parent_element), parent.tag,
 		parent.attrib["Name"], len(descriptions))
@@ -228,21 +281,31 @@ class Description:
 #        </Function>
 
 class Function(Node):
-    """ Function: This class represents a module function. """
+
+    ## @brief Function constructor
+    #  @param self *Function* object to initialize
+    #  @param function_element *Element* contain XML to extract from
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # This method extacts information about a remote procedure call
+    # function from *function_element* 
+
 
     def __init__(self, function_element, style):
-	""" Fuction: Initialize *self* from *function_element*. """
 
-	assert function_element.tag == "Function", "Need a <Function> element"
+	# Perform argument type checking:
+	assert isinstance(function_element, ET.Element)
+	assert isinstance(style, Style)
+	assert function_element.tag == "Function"
 
+	# Extract the <Function ...> attributes:
 	attributes = function_element.attrib
-
 	name = attributes["Name"]
+	brief = attributes["Brief"]
+	number = int(attributes["Number"])
+
+	# We need to have *style* loaded into *self* for *format*() to work.
 	self.name = name
-	self.brief = attributes["Brief"]
-	self.description = Description.extract(function_element, style)
-	self.name = name
-	self.number = int(attributes["Number"])
 	self.style = style
 
 	signature = "{0:r}(".format(self)
@@ -263,9 +326,14 @@ class Function(Node):
 	    results.append(result)
 	    signature += prefix + result.name
 
+	# Load up the rest of *self*:
+	self.brief = brief
+	self.description = Description.extract(function_element, style)
+	self.number = number
 	self.parameters = parameters
 	self.results = results
 
+	# Initalize the parent *Node* base class.
 	Node.__init__(self, "Function", signature, None, None, style)
 
     def __format__(self, fmt):
