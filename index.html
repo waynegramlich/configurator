@@ -1,0 +1,81 @@
+								<HTML>
+								<Head>
+								<Title>
+Configurator
+								</Title>
+								</Head>
+								<Body>
+								<P>
+This is one of Wayne's many
+    <A HRef="http://gramlich.net/projects/electronics_projects.html">
+electronics projects</A>.
+								</P>
+								<H1>
+Configurator
+								</H1>
+								<H2>
+Introduction
+								</H2>
+								<P>
+Configurator is a program that is used to configure
+modules that make up an electronic project.  At this
+point in main window looks as follows:
+								<BlockQuote>
+    <Img Src="configurator.png">
+								</BlockQuote>
+The main window has three sub windows:
+								<UL>LI>
+    The left window is a "database" of available
+    modules.  Currently modules can be selected by
+    Vendors, Categories, or by Buses.  Currently,
+    the MBDuino module is selected.
+								</LI><LI>
+    The center window is the project window that
+    shows the project as nested tree of interconnected
+    modules.  The project is hosted by Raspbery Pi
+    computer, that has a RasPi bridge that connectes
+    between the Raspberry Pi GPIO connector and a
+    MakerBus.  There are 4 modules plugged into the
+    MakerBus -- LCD_Duino, Grove_Duino, TinkerKit_Duino,
+    and DemPer_Duino.  All of the modules are
+    Arduino<Sup>&trade;</Sup> compatible board into which
+    shield can be plugged.  The LCD_Duino has an
+    LCD shield plugged into it and the Grove_Duino
+    has a Grove shield plugged into it.  All names
+    in the project tree are specified by the project
+    designer.
+								</LI><LI>
+    The right window is called the module window and
+    it allows the Configurator to perform remote
+    procedure calls and examine registers on the
+    selected module.  The currently selected module
+    is highlighted in the middle window.  The [Get],
+    [Set], and [Call] buttons are used to directly
+    access the module.  Currently, the user has
+    just sent the letter 'H' to the LCD module via
+    the <Em>character_send</Em>() remote procedure
+    call.
+
+								</LI></UL>
+That should provide enough of an overview for now.
+								</P><P>
+The source code is available via
+    <A HRef="https://github.com/waynegramlich/configurator">
+github<A>.
+								</P><P>
+The documentation is converted to Doxygen
+    <A HRef="html/index.html">
+format</A>.  Doxygen version 1.8 is required since
+much of the documentation is done in
+    <A HRef="http://daringfireball.net/projects/markdown/">
+Markdown</A>.
+								</P>
+								<HR>
+								<Address>
+    <A HRef="copyright.html">
+Copyright</A> &copy; 2012 by
+    <A HRef="gramlich.html">
+Wayne C. Gramlich</A>.
+								</Address>
+								</Body>
+								</HTML>
