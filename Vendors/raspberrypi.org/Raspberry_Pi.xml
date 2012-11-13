@@ -1,0 +1,13 @@
+<Module Name="Raspberry Pi" Vendor="raspberrypi.org"
+ Brief="700MHz ARM6 with Ethernet, USB, HDMI, A/V, SD Card, and GPIO">
+  <Overview>
+    The Raspberry Pi is an inexpensive 700MHz ARM6 processor
+  </Overview>
+  <Connector Name="USB1" Bus="USB" Physical_Connector="Standard" />
+  <Connector Name="USB2" Bus="USB" Physical_Connector="Standard" />
+  <Connector Name="Ethernet" Bus="Ethernet" Physical_Connector="RJ45" />
+  <Connector Name="GPIO" Bus="RasPi_GPIO" Physical_Connector="2x13_2.54mm" />
+  <Classification Level1="Vendors" Level2="raspberrypi.org" />
+  <Classification Level1="Buses" Level2="MakerBus" />
+  <Classification Level1="Catagories" Level2="Host" Level3="Linux" />
+</Module>

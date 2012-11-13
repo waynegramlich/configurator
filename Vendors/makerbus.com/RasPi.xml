@@ -1,0 +1,13 @@
+<Module Name="RasPi" Vendor="makerbus.com"
+ Brief="Bridge between Raspbery Pi and MakerBus">
+  <Overview>
+    more here.
+  </Overview>
+  <Connector Name="N2" Bus="Maker_Bus" Physical_Connector="2x5_2.54mm" />
+  <Connector Name="Shield" Bus="Shield" Physical_Connector="Arduino30" />
+  <Classification Level1="Vendors" Level2="makerbus.com" Level3="Bridges" />
+  <Classification Level1="Buses" Level2="Raspberry Pi" />
+  <Classification Level1="Buses" Level2="MakerBus" />
+  <Classification Level1="Catagories" Level2="Bridges"
+   Level3="Raspberry Pi" Level4="Raspberry Pi=>MakerBus" />
+</Module>

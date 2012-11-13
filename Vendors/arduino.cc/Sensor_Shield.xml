@@ -1,0 +1,22 @@
+<Module Name="Sensor Shield" Vendor="arduino.cc"
+ Brief="Arduino(tm) shield to TinkerKit connection bridge.">
+  <Overview>
+    The Grove Base Shild is an Arduino(tm) compatible shield
+    that has 22 Grove connectors on it.  7 of the connectors
+    are connected to the A0-A5 shield pins.  13 of the
+    connectors are connected to pins D2-D13.  1 connector is
+    dedicated to D0-D1 for serial communication.  The final
+    is really not compatible with the Grove architecture at
+    all; all 4 pins are connected to D10-D13 for SPI communication.
+    This shield is a "top shield" in that other shields can not
+    be plugged into it.
+  </Overview>
+  <Classification Level1="Vendors" Level2="arduino.cc" Level3="TinkerKit" />
+  <Classification Level1="Vendors" Level2="arduino.cc" Level3="Shield" />
+  <Classification Level1="Buses" Level2="Shield" />
+  <Classification Level1="Catagories" Level2="Bridges"
+   Level3="Shield" Level4="Shield=>TinkerKit" />
+  <Connector Name="Shield" Bus="Shield" Physical_Connector="Shield30" />
+  <Connector Name="Input0" Bus="TinkerKit" Physical_Connector="1x3_2.54mm" />
+</Module>
+

@@ -1,0 +1,22 @@
+<Bus Name="Gadgeteer">
+  <Physical_Connector Name="2X5_2.54mm" Style="Tree">
+    <Logical_Connector Name="X" Brief="3 GPIO"/>
+    <Logical_Connector Name="Y" Brief="7 GPIO"/>
+    <Logical_Connector Name="A" Brief="Analog In"/>
+    <Logical_Connector Name="C" Brief="CAN"/>
+    <Logical_Connector Name="D" Brief="USB"/>
+    <Logical_Connector Name="E" Brief="Ethernet"/>
+    <Logical_Connector Name="F" Brief="SD Card"/>
+    <Logical_Connector Name="H" Brief="USB Host"/>
+    <Logical_Connector Name="I" Brief="I2C"/>
+    <Logical_Connector Name="K" Brief="UART + Handshaking"/>
+    <Logical_Connector Name="O" Brief="Analog Out"/>
+    <Logical_Connector Name="P" Brief="PWM"/>
+    <Logical_Connector Name="S" Brief="SPI"/>
+    <Logical_Connector Name="T" Brief="Touch"/>
+    <Logical_Connector Name="R" Brief="LCD 1"/>
+    <Logical_Connector Name="U" Brief="LCD 2"/>
+    <Logical_Connector Name="U" Brief="LCD 3"/>
+    <Logical_Connector Name="Z" Brief="Manufacturer"/>
+  </Physical_Connector>
+</Bus>

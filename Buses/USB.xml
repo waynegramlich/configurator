@@ -1,0 +1,10 @@
+<Bus Name="USB">
+  <Physical_Connector Name="Standard" Style="Tree" Male_Female="1"
+   Brief="Standard large sized USB connector"/>
+  <Physical_Connector Name="Mini" Style="Tree" Male_Female="1"
+   Brief="Medium sized USB connector"/>
+  <Physical_Connector Name="Micro" Style="Tree" Male_Female="1"
+   Brief="Small sized USB connector"/>
+  <Physical_Connector Name="Micro-AB" Style="Tree"
+   Brief="Small sized USB connector for USB On-the-Go"/>
+</Bus>

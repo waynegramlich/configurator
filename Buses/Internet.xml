@@ -1,0 +1,4 @@
+<Bus Name="Internet">
+    <Physical_Connector Name="RJ45" Style="Tree"/>
+    <Physical_Connector Name="WiFi" Sytle="Multidrop"/>
+</Bus>

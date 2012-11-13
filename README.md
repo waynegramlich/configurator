@@ -1,6 +1,5 @@
 configurator
 ============
 
-Electronic project module configurator.
+Electronic project module configurator!
 
-x

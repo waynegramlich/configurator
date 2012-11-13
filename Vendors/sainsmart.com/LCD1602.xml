@@ -1,0 +1,121 @@
+<Module Name="LCD1602" Vendor="sainsmart.com" Sub_Class="LCDKeypad"
+ Brief="2x16 Character LCD">
+  <Overview>
+    This module is a 2 line by 16 character textual
+    Liquid Crystal Display (LCD) module.  The module has
+    a cursor that be placed anywhere on the display, can
+    be made visible or invisible, blinking or not, its
+    entry direction can be left to right or right to left.
+    In addition, it is possible to shift entire display
+    left or right.  Lastly, there are 6 buttons labeled
+    [Home], [Up], [Down], [Left], [Right] and [Select]
+    that can be read to implement a simple menu configuration
+    system.
+  </Overview>
+  <Classification Level1="Vendors" Level2="sainsmart.com" Level3="Visual" />
+  <Classification Level1="Buses" Level2="Shield" />
+  <Classification Level1="Catagories" Level2="Visual" />
+  <Register Name="display" Type="Logical" Number="0"
+   Brief="Enable or Disable the display.">
+    <Description>
+	This register specifies whether LCD the characters visible
+	or not.  Setting this register to *True* makes them visible;
+	otherwise, setting this register to *False* makes them not
+	visible.
+    </Description>
+  </Register>
+  <Register Name="blink" Type="Logical" Number="2"
+   Brief="Enable or disable blinking cursor.">
+    <Description>
+	This register specifies whether cursor is to blink or not.
+	Setting this register to *True* causes the cursor
+	to blink; otherwise, setting this register to *False*
+	makes the cursor not blink.
+    </Description>
+  </Register>
+  <Register Name="cursor" Type="Logical" Number="4"
+   Brief="Enable or disable cursor visibility.">
+    <Description>
+	This register specifies whether the cursor is shown or not.
+	Setting this register to *True* causes the cursor
+	to be visible; otherwise, setting this register to
+	*False* makes the cursor invisible.
+    </Description>
+  </Register>
+  <Register Name="direction" Type="Logical" Number="6"
+   Brief="Specify cursor direction as left to right or right to left.">
+    <Description>
+	This register specifies the cursor advance direction.
+	Setting this register to *True* causes the cursor
+	to advance left to right; otherwise, setting this register to
+	*False* makes the cursor advance right to left.
+    </Description>
+  </Register>
+  <Register Name="autoscroll" Type="Logical" Number="8"
+   Brief="Enable or disable automatic scrolling.">
+    <Description>
+	This register specifies whether the cursor automatically
+	scrolls to the next line when it reaches the end of the
+	current line.  	Setting this register to *True* causes
+	the cursor automatically advance; otherwise, setting this
+	register to *False* keeps the cursor on the same line.
+    </Description>
+  </Register>
+  <Function Name="clear" Number="10"
+   Brief="Clear the display.">
+    <Description>
+	This function will cause all of the characters on
+	the display to set to a blank (i.e. a space.)
+    </Description>
+  </Function>
+  <Function Name="home" Number="11"
+   Brief="Cause cursor to move to upper left.">
+    <Description>
+	This function will cause the cursor to be moved to the
+	upper left corner of the LCD display
+    </Description>
+  </Function>
+  <Function Name="cursor_move" Number="12"
+   Brief="Move the cursor to (*column*, *row*).">
+    <Parameter Name="column" Type="UByte" Brief="Column to go to." />
+    <Parameter Name="row" Type="UByte" Brief="Row to go to." />
+    <Description>
+	This function will cause the cursor to move to (*column*, *row*).
+    </Description>
+  </Function>
+  <Function Name="button" Number="13"
+   Brief="Return the *button* value.">
+    <Result Name="button" Type="UByte" Brief="Returned button value" />
+    <Description>
+	This function will return the value for the currently
+	depressed button.  The possible button values are ...:
+    </Description>
+  </Function>
+  <Function Name="character send" Number="14"
+   Brief="Send *character* to display.">
+    <Parameter Name="character" Type="Character"
+     Brief="Character to send to display." />
+    <Description>
+	This function will send *character* to the LCD display.
+	The cursor will advance to the next location.
+    </Description>
+  </Function>
+  <Function Name="display shift left" Number="15"
+   Brief="Shift entire display left by one character.">
+    <Description>
+	This function will shift the entire display left by one
+	character.  There are it is possible to shift left by at
+	least 16 positions, but eventually the buffer starts to wrap
+	around.
+    </Description>
+  </Function>
+  <Function Name="display shift right" Number="16"
+   Brief="Shift entire display left by one character.">
+    <Description>
+	This function will shift the entire display right by one
+	character.  There are it is possible to shift left by at
+	least 16 positions, but eventually the buffer starts to wrap
+	around.
+    </Description>
+  </Function>
+</Module>

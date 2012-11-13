@@ -1,0 +1,9 @@
+<Bus Name="Grove">
+  <Physical_Connector Name="4pin2mm" Style="Tree">
+    <Logical_Connector Name="I2C" Brief="I2C"/>
+    <Logical_Connector Name="Digital 1" Brief="1 Digital GPIO"/>
+    <Logical_Connector Name="Digital 2" Brief="2 Digital GPIO"/>
+    <Logical_Connector Name="Analog In 2" Brief="2 Analog In"/>
+    <Logical_Connector Name="Serial" Brief="2 Asynchronous Serial"/>
+  </Physical_Connector>
+</Bus>

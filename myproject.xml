@@ -1,0 +1,25 @@
+<Project Name="myproject">
+  <Module_Use Name="Raspberry Pi"
+   Vendor="raspberrypi.org" Module="Raspberry Pi">
+    <Module_Use Name="RasPi"
+     Vendor="makerbus.com" Module="RasPi">
+      <Module_Use Name="LCD_Duino"
+       Vendor="makerbus.com" Module="MBDuino">
+        <Module_Use Name="LCD"
+         Vendor="sainsmart.com" Module="LCD1602" />
+      </Module_Use>
+      <Module_Use Name="Grove_Duino"
+       Vendor="makerbus.com" Module="MBDuino">
+        <Module_Use Name="Grove"
+         Vendor="seeedstudio.com" Module="Grove Base Shield" />
+      </Module_Use>
+      <Module_Use Name="TinkerKit_Duino"
+       Vendor="makerbus.com" Module="MBDuino">
+        <Module_Use Name="Sensor Shield"
+         Vendor="arduino.cc" Module="Sensor Shield" />
+      </Module_Use>
+      <Module_Use Name="DemPer_Duino"
+       Vendor="makerbus.com" Module="MBDuino" />
+    </Module_Use>
+  </Module_Use>
+</Project>
