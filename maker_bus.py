@@ -134,6 +134,26 @@ class Maker_Bus_Base:
 	    print "{0}<=Maker_Bus.flush() response={1}". \
 	      format(trace_pad, self.response)
 
+    def discovery_mode(self):
+	""" Maker_Bus_Base: Perform discovery mode """
+
+	serial = self.serial
+	serial.write(chr(0xc4))
+	serial.flush()
+	line = []
+	ids = []
+	done = False
+	while not done:
+	    byte = serial.read(1)
+	    #print "byte={0}".format(ord(byte))
+	    if byte == '\n':
+		ids.append("".join(line[1:]))
+		done = len(line) != 0 and line[0] == '!'
+		del line[:]
+	    else:
+		line.append(byte)
+	return ids
+
     def frame_get(self):
 	""" {Maker_Bus}: Return the next frame from the bus connected
 	    to {self}. """
@@ -169,7 +189,7 @@ class Maker_Bus_Base:
 	    print "{0}=>Maker_Bus.frame_put({1:x})".format(trace_pad, frame)
 
 	serial = self.serial
-	if (frame > 0xff or (0xc1 <= frame and frame <= 0xc3)):
+	if (frame > 0xff or (0xc1 <= frame and frame <= 0xc4)):
 	    # Send {frame} as two bytes:
             serial.write(chr(0xc0 | ((frame >> 7) & 3)))
             serial.write(chr(frame & 0x7f))

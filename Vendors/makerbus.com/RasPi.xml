@@ -10,4 +10,23 @@
   <Classification Level1="Buses" Level2="MakerBus" />
   <Classification Level1="Catagories" Level2="Bridges"
    Level3="Raspberry Pi" Level4="Raspberry Pi=>MakerBus" />
+  <Function Name="Bus Scan" Number="-2"
+   Brief="Identify all modules on MakerBus">
+    <Description>
+      Perform a bus scan to identify all modules on the MakerBus
+      and assign them a unique bus address.
+    </Description>
+  </Function>
+  <Function Name="Reset" Number="-1"
+   Brief="Reset all modules on MakerBus">
+    <Description>
+      Reset all of the modules on the bus.
+    </Description>
+  </Function>
+  <Function Name="Upload All" Number="-2"
+   Brief="Upload firmware to all Modules">
+    <Description>
+      Upload firmware to all of the modules for which it is appropriate.
+    </Description>
+  </Function>
 </Module>

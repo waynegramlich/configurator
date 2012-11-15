@@ -283,106 +283,127 @@ class Application(Frame):
 	    function = self.register_or_function
 	    assert isinstance(function, Function)
 
-            # The format of the entry field is:
-	    #
-	    #   "arg1 ... argnN ; result1 ... resultN"
-	    #
-	    # Where arg1 ... argN are function arguments
-	    # and everything after the semicolon is results
-	    # from the previous time.
+	    # Positive function numbers are normal and negative are "special":
+	    function_number = function.number
+	    if function_number >= 0:
+		# Normal function call:
+	
+		# The format of the entry field is:
+		#
+		#   "arg1 ... argnN ; result1 ... resultN"
+		#
+		# Where arg1 ... argN are function arguments
+		# and everything after the semicolon is results
+		# from the previous time.
 
-	    # Grab the call entry text and strip off from the semicolon on:
-	    call_entry = self.call_entry
-	    call_entry_text = self.call_entry.get()
-	    #print "call_entry_text (original)='{0}'".format(call_entry_text)
-	    semicolon_index = call_entry_text.find(';')
-	    if semicolon_index >= 0:
-		call_entry_text = call_entry_text[0 : semicolon_index]
-	    call_entry_text = call_entry_text.strip(' ')
-	    #print "call_entry_text (just args)='{0}'".format(call_entry_text)
+		# Grab the call entry text and strip off from the semicolon on:
+		call_entry = self.call_entry
+		call_entry_text = self.call_entry.get()
+		#print "call_entry_text (original)='{0}'". \
+		#  format(call_entry_text)
+		semicolon_index = call_entry_text.find(';')
+		if semicolon_index >= 0:
+		    call_entry_text = call_entry_text[0 : semicolon_index]
+		call_entry_text = call_entry_text.strip(' ')
+		#print "call_entry_text (just args)='{0}'". \
+		#  format(call_entry_text)
 
-	    # Stuff the truncated value back into the call entry area:
-	    call_entry.delete(0, END)
-	    call_entry.insert(0, call_entry_text)
-
-	    # Split everyting into arguments:
-	    arguments = call_entry_text.split()
-	    #print "arguments=", arguments
-
-	    # Now convert everything to a number:
-	    number_arguments =[]
-            for argument in arguments:
-		if argument.startswith("0x"):
-		    # Deal with hexadecimal numbers starting with "0x...":
-		    number = int(argument, 16)
-		elif len(argument) == 3 and \
-		  argument[0] == "'" and argument[2] == "'":
-		    # Deal with character literals '{char}':
-		    number = ord(argument[1])
-		elif argument.isdigit():
-		    # Assume it is a decimal integer:
-		    number = int(argument)
-		else:
-		    # We have an error:
-		    self.warn("'{0}' converted to 0".format(argument))
-		    number = 0
-		number_arguments.append(number)
-            #print "number_arguments=", number_arguments
-
-	    number_arguments_length = len(number_arguments)
-	    parameters = function.parameters
-	    parameters_length = len(parameters)
-	    if parameters_length == number_arguments_length:
-                # We have something to send:
-
-		# First, start the command:
-		maker_bus_module = self.maker_bus_module
-		maker_bus_module.request_begin(function.number)
-
-		# Second, iterate over all the parameters:
-		for index in range(parameters_length):
-		    number = number_arguments[index]
-                    parameter = parameters[index]
-		    type = parameter.type
-		    if type == "Byte":
-			maker_bus_module.request_byte_put(number)
-		    elif type == "Character":
-			maker_bus_module.request_character_put(chr(number))
-		    elif type == "Logical":
-			maker_bus_module.request_logical_put(number)
-		    elif type == "UByte":
-			maker_bus_module.request_ubyte_put(number)
-		    else:
-			assert False, "Finish dispatch table"
-
-		# Third, close of command request:
-		maker_bus_module.request_end()
-
-		# Forth: Grab the return values:
-		prefix = " ;"
-		results = function.results
-		for result in results:
-		    type = result.type
-		    if type == "Byte":
-			number = maker_bus_module.response_byte_get()
-		    elif type == "Character":
-			number = maker_bus_module.response_character_get()
-		    elif type == "Logical":
-			number = maker_bus_module.response_logical_get()
-		    elif type == "UByte":
-			number = maker_bus_module.response_ubyte_get()
-		    else:
-			assert False, "Finish dispatch table"
-		    call_entry_text += prefix + str(number)
-
-		# Fifth, put the final result back:
+		# Stuff the truncated value back into the call entry area:
 		call_entry.delete(0, END)
 		call_entry.insert(0, call_entry_text)
-	    else:
-		# We have an error:
-		self.warn("Function needs %d% arguments, but got %d% instead". \
-		  format(parameters_length), number_arguments_length)
 
+		# Split everyting into arguments:
+		arguments = call_entry_text.split()
+		#print "arguments=", arguments
+
+		# Now convert everything to a number:
+		number_arguments =[]
+		for argument in arguments:
+		    if argument.startswith("0x"):
+			# Deal with hexadecimal numbers starting with "0x...":
+			number = int(argument, 16)
+		    elif len(argument) == 3 and \
+		      argument[0] == "'" and argument[2] == "'":
+			# Deal with character literals '{char}':
+			number = ord(argument[1])
+		    elif argument.isdigit():
+			# Assume it is a decimal integer:
+			number = int(argument)
+		    else:
+			# We have an error:
+			self.warn("'{0}' converted to 0".format(argument))
+			number = 0
+		    number_arguments.append(number)
+		#print "number_arguments=", number_arguments
+
+		number_arguments_length = len(number_arguments)
+		parameters = function.parameters
+		parameters_length = len(parameters)
+		if parameters_length == number_arguments_length:
+		    # We have something to send:
+
+		    # First, start the command:
+		    maker_bus_module = self.maker_bus_module
+		    maker_bus_module.request_begin(function_number)
+
+		    # Second, iterate over all the parameters:
+		    for index in range(parameters_length):
+		        number = number_arguments[index]
+                        parameter = parameters[index]
+			type = parameter.type
+			if type == "Byte":
+			    maker_bus_module.request_byte_put(number)
+			elif type == "Character":
+			    maker_bus_module.request_character_put(chr(number))
+			elif type == "Logical":
+			    maker_bus_module.request_logical_put(number)
+			elif type == "UByte":
+			    maker_bus_module.request_ubyte_put(number)
+			else:
+			    assert False, "Finish dispatch table"
+
+		    # Third, close of command request:
+		    maker_bus_module.request_end()
+
+		    # Forth: Grab the return values:
+		    prefix = " ;"
+		    results = function.results
+		    for result in results:
+			type = result.type
+			if type == "Byte":
+			    number = maker_bus_module.response_byte_get()
+			elif type == "Character":
+			    number = maker_bus_module.response_character_get()
+			elif type == "Logical":
+			    number = maker_bus_module.response_logical_get()
+			elif type == "UByte":
+			    number = maker_bus_module.response_ubyte_get()
+			else:
+			    assert False, "Finish dispatch table"
+			call_entry_text += prefix + str(number)
+
+		    # Fifth, put the final result back:
+		    call_entry.delete(0, END)
+		    call_entry.insert(0, call_entry_text)
+		else:
+		    # We have an error:
+		    self.warn("Function needs %d% arguments, got %d% instead". \
+		      format(parameters_length), number_arguments_length)
+	    else:
+		# Special function:
+		if function_number == -1:
+		    # Reset
+		    pass
+		elif function_number == -2:
+		    # Bus_Scan:
+		    maker_bus_module = self.maker_bus_module
+		    maker_bus_base = maker_bus_module.maker_bus_base
+		    ids = maker_bus_base.discovery_mode()
+		    print "bus_scan=", ids
+		elif function_number == -3:
+		    # Upload all
+		    pass
+		#print "function_number={0}".format(function_number)
 	else:
 	    self.warn(why_not)
 

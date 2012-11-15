@@ -257,8 +257,8 @@ class Description:
 	    # We either have none, or more than one, generate error message:
 	    description = None
 	    print "{0}:<{1} Name='{2}'...> has {3} <Description> tags". \
-	      format(XML.line_number(parent_element), parent.tag,
-		parent.attrib["Name"], len(descriptions))
+	      format(XML.line_number(parent_element), parent_element.tag,
+		parent_element.attrib["Name"], len(descriptions))
 
 	return description
 
