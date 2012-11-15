@@ -284,16 +284,15 @@ class Function(Node):
 
     ## @brief Function constructor
     #  @param self *Function* object to initialize
-    #  @param function_element *Element* contain XML to extract from
+    #  @param function_element *Element* containing XML to extract from
     #  @param style *Style* object that specifies how to format generate code.
     #
     # This method extacts information about a remote procedure call
-    # function from *function_element* 
-
+    # function from *function_element* and stuffs it into *self*.
 
     def __init__(self, function_element, style):
 
-	# Perform argument type checking:
+	# Check argument type:
 	assert isinstance(function_element, ET.Element)
 	assert isinstance(style, Style)
 	assert function_element.tag == "Function"
@@ -308,8 +307,10 @@ class Function(Node):
 	self.name = name
 	self.style = style
 
+	# Build a signature for the function:
 	signature = "{0:r}(".format(self)
 
+	# Iterate over all the parameters:
 	prefix = ""
 	parameters = []
 	for parameter_element in function_element.findall("Parameter"):
@@ -319,6 +320,7 @@ class Function(Node):
 	    prefix = ", "
 	signature += ")"
 
+	# Iteratate over all the results:
 	prefix = " => "
 	results = []
 	for result_element in function_element.findall("Result"):
@@ -336,14 +338,28 @@ class Function(Node):
 	# Initalize the parent *Node* base class.
 	Node.__init__(self, "Function", signature, None, None, style)
 
+    ## @brief Format *self* using *fmt* string.
+    #  @param self *Function* to use for formatting.
+    #  @param fmt *str* that specifies the format to use
+    #  @result *str* Formatted string is returned
+    #
+    # Format *self* using *fmt* to control formatting and return the
+    # formatted string.  The allowed formatting strings are:
+    #
+    #   * 'r' returns just the routine name in the appropriate style
+    #   * 'S' returns C/C++ output signature.
+    #   * 'Sxxx' returns the C/C++ output signature with 'xxx' spliced
+    #     in before the routine name.  This is used to splice a class
+    #     name in front of the routine name.  For example, 'SClass_Name::'
+    #     will return "Class_name::{routine_name}(...)".
+    #   * 's' returns a simplified signature that has just the a
+    #     routine name, parameter name and result names in the form
+    #     "routine_name(parameter_names, ...) => result_names, ...
+
     def __format__(self, fmt):
-	""" Function: Return a formatted version of *self* controlled by
-	    *fmt*.  If *fmt* is 'r', a routine name is returned.
-	    If *fmt* is 'S', output the signature for *self*.
-	    if *fmt* is 'Sxxx', output the signature for *self* where
-	    'xxx' is inserted before the routine name.  This is used
-	    to splice a class name in front of the routine name (e.g.
-	    'SClass_Name::'.) """
+
+	# Check argument types:
+	assert isinstance(fmt, str)
 
 	# Dispatch on *fmt*:
 	style = self.style
@@ -385,75 +401,172 @@ class Function(Node):
 	    lexemes.append(")");
 	    result = "".join(lexemes)
 	elif fmt[0] == 's':
-	    # Signature:
-	    lexemes = []
-
+	    # Start with the routine name:
 	    result = "{0:r}(".format(self)
 
-	    # Output the parameters:
+	    # Append the parameters:
 	    prefix = ""
 	    for parameter in self.parameters:
 		result += "{0}{1:n}".format(prefix, parameter)
 	        prefix = ", "
 	    result += ")"
 
-	    # Figure out the return type:
+	    # Append the return results:
             results = self.results
-	    if len(results) != 0:
-		prefix = " => "
-		for result_node in self.results:
-		    result += "{0}{1:n}".format(prefix, result_node)
-		    prefix = ", "
+            prefix = " => "
+            for result_node in self.results:
+		result += "{0}{1:n}".format(prefix, result_node)
+		prefix = ", "
 	else:
 	    # Error:
 	    result = "@Function:{0}@".format(fmt)
 	return result
 
-    def cpp_header_write(self, module, out_stream):
-	""" Function: Write the method declaration for *self*
-	    to *out_stream*. """
+    ## @brief Write the C++ method declaration for *self* to *out_stream*.
+    #  @param self *Function* object to use for information
+    #  @param module *Module* (Currently unused)
+    #  @param out_stream *File* output stream to output to
+    #
+    # This routine will output a chunk of C++ code to *out_stream*
+    # that corresponds to method declaration in C++ class definition:
+    # The code looks roughly as follows:
+    #
+    #        // BRIEF
+    #        RT1 FUNCTION(PT1 PN1,...,PTn PNn,RT2 RN2,...,RTn RNn);
+    #
+    # where
+    #
+    #  * FUNCTION is the function name
+    #  * BRIEF is the 1 line comment brief
+    #  * PNi is the i'th Parameter Name
+    #  * PTi is the i'th Parameter Type
+    #  * RNi is the i'th Result Name
+    #  * RTi is the i'th Result Type
 
+    def cpp_header_write(self, module, out_stream):
+
+	# Check argument types:
+	assert isinstance(module, Module)
+	assert isinstance(File, out_stream)
+
+	# Output: "// BRIEF"
 	style = self.style
 	out_stream.write("{0:i}// {1}\n".format(style, self.brief))
+
+	# Output: "RT1 FUNCTION(PT1 PN1,...,PTn PNn,RT2 RN2,...,RTn RNn);"
 	out_stream.write("{0:i}{1:S};\n\n".format(style, self))
 
-    def cpp_local_source_write(self, module, out_stream):
-	""" Function: Write *self* to *out_stream* as a method template."""
+    ## @brief Write local C++ RPC code for *self* to *out_stream*.
+    #  @param self *Function* to use for parameters and return results
+    #  @param module *Module* to use for module name and the like.
+    #  @param out_stream *File* to write everything out to.
+    #
+    # This method will output the local remote procedure call C++ code
+    # for *function out to *out_stream*.  The code looks basically
+    # like this:
+    #
+    #        // FUNCTION: BRIEF
+    #        RT1 MODULE::FUNCTION(PT1 PN1,...,PTn PNn, RT2 *RN2,...,RTn *RNn) {
+    #          RT1 RN1;
+    #          ...
+    #          RTn RNn;
+    #          //////// Edit begins here: {FUNCTION_NAME}
+    #          //////// Edit ends here: {FUNCTION_NAME}
+    #          return RN1;
+    #        }
+    #
+    # where
+    #
+    #  * FUNCTION is the function name
+    #  * BRIEF is the 1 line comment brief
+    #  * MODULE is the module name
+    #  * PNi is the i'th Parameter Name
+    #  * PTi is the i'th Parameter Type
+    #  * RNi is the i'th Result Name
+    #  * RTi is the i'th Result Type
 
-	# Grab soem values from *self*:
+    def cpp_local_source_write(self, module, out_stream):
+
+	# Check argument types:
+	assert isinstance(module, Module)
+	assert isinstance(out_stream, File)
+
+	# Grab some values from *self*:
 	style = self.style
 	name = self.name
 	results = self.results
 	results_length = len(results)
 
-	# Output the brief comment:
+	# Output "// FUNCTION: BRIEF"
 	out_stream.write("// {0:r}: {1}\n".format(self, self.brief))
+
+ 	# Output:
+	#   "RT1 MODULE::FUNC(PT1 PN1,...,PTn PNn, RT2 *RN2,...,RTn *RNn) {"
 
 	# Compute the signature with {class_name}:: prepended to function name:
 	format_string = "{0:S" + module.name + "::}{1:b}"
 	#print "format_string='{0}'".format(format_string)
-
-	# Output the function signature followed by an open brace:
 	out_stream.write(format_string.format(self, style))
 
-	# Output results variables if appropariate:
+	# Output variables for all the results:
 	for result in results:
+	    # Output: "RTi RNi;"
             out_stream.write("{0:i}{1:t} {1:n};\n".format(style, result))
 
-	# Write out the code fence:
+	# Output the code fence::
+        #	//////// Edit begins here: {FUNCTION_NAME}
+        #	//////// Edit ends here: {FUNCTION_NAME}
 	module.fence_write("{0:r}".format(self).upper(), out_stream)
 
-	# Generate a return statement if appropriate:
+	# Output: "return RN1;":
 	if results_length != 0:
-	    out_stream.write("{0:i}return {1};\n".format(style, self.name))
+	    out_stream.write("{0:i}return {1};\n". \
+	      format(style, self.results[0].name))
 
-	# Output the final closing brace:
+	# Output: "}":
 	out_stream.write("{0:e}\n".format(style))
 
+    ## @brief Write C++ code for RPC request handing for *self* to *out_stream*
+    #  @param self *Function* to process
+    #  @param module_name *str* Module name to use
+    #  @param out_stream *File* to write output to
+    #
+    # This method will output *self* to *out_stream* as a **case** clause
+    # as part of a **switch** statement.  The basic format of the code
+    # that is generated looks as follows:
+    #
+    #        case NUMBER: {
+    #          // FUNCTION_NAME: BRIEF
+    #          PN1 = maker_bus->PT1_get();
+    #          ...
+    #          PNn = maker_bus->PTn_get();
+    #          RT1 RN1;
+    #          ...
+    #          RTn RNn;
+    #          if (execute_mode) {
+    #            RN1 = FUNCTION_NAME(PN1,...PNn,&RN2,...,&RNn);
+    #            maker_bus->RT2_put(RN2);
+    #            ...
+    #            maker_bus->RTn_put(RNn);
+    #            break;
+    #          }
+    #        }
+    #
+    # where
+    #
+    #  * NUMBER is the RPC number
+    #  * FUNCTION_NAME is the function name
+    #  * BRIEF is the 1 line comment brief
+    #  * PNi is the i'th Parameter Name
+    #  * PTi is the i'th Parameter Type
+    #  * RNi is the i'th Result Name
+    #  * RTi is the i'th Result Type
+
     def cpp_slave_write(self, module_name, out_stream):
-	""" Function: Write C++ code for *self* to *out_stream* where
-	    the code is a case clause of a switch statement that
-	    processes a remote procedure call. """
+
+	# Check argument types:
+	assert isinstance(module_name, str)
+	assert isinstance(out_stream, File)
 
 	# Grab some values out of *self*:
 	brief = self.brief
@@ -464,62 +577,102 @@ class Function(Node):
 	results_length = len(results)
 	style = self.style
 
-	# Output the case and a *brief* comment:
+	# Output: "case NUMBER: {"
 	out_stream.write("{0:i}case {1}:{0:b}".format(style, number))
+
+	# Output: "// FUNCTION_NAME: BRIEF"
 	out_stream.write("{0:i}// {1:r}: {2}\n".format(style, self, brief))
 
 	# Fetch the each *parameter* value and stuff into a local variable:
 	for parameter in parameters:
+            # Output "PNi = maker_bus->PTi_get();"
 	    parameter_type = parameter.type
             out_stream.write("{0:i}{1:c} = maker_bus->{2}_get();\n". \
 	      format(style, parameter, parameter_type.lower()))
 	    
 	# Define the variables needed for return values:
 	for result in results:
+	    # Output: "RT1 RN1;"
             out_stream.write("{0:i}{1:c};\n".format(style, result))
 
-	# Generate the execute mode if statement:
+	# Output: "if (execute_mode) {"
 	out_stream.write("{0:i}if (execute_mode){0:b}".format(style))
-	out_stream.write("{0:i}".format(style))
 
-	# Assign first return value (if there is one) to a variable:
+	# Output: "RN1 = " (if needed):
+	out_stream.write("{0:i}".format(style))
 	if results_length >= 1:
 	    out_stream.write("{0:n} = ".format(results[0]))
 
-	# Call the function:
+	# Output: "FUNCTION_NAME(":
 	out_stream.write("{0}.{1:r}(".format(module_name.lower(), self))
 
-	# Pass in parameters:
+	# Output: "PN1,...PNn" (if available):
 	prefix = ""
 	for parameter in parameters:
             out_stream.write("{0}{1:n}".format(prefix, parameter))
 	    prefix = ", "
 
-	# If is more than one return, pass in addresses of return values:
+	# Output: ",&RN2,...,&RNn" (if necessary):
 	if results_length > 1:
 	    for index in range(1, results_length):
 		result = results[index]
 		out_stream.write("{0}&{1:n};\n".format(prefix, result))
 		prefix = ", "
 
-	# Close off function call:
+	# Output: ");" 
 	out_stream.write(");\n")
 
 	# Send any results to the send buffer:
 	for result in results:
+	    # Output: "maker_bus->RTi_put(RNi);"
             out_stream.write("{0:i}maker_bus->{1}_put({2:n});\n". \
 	      format(style, result.type.lower(), result))
 
-	# Close of the execute block:
+	# Output: "}"
 	out_stream.write("{0:e}".format(style))
 
-	# Close off the case:
+	# Output: "break;"
 	out_stream.write("{0:i}break;\n".format(style))
+
+	# Output: "}"
 	out_stream.write("{0:e}".format(style))
+
+    ## @brief Write remote side RPC code for *self* to *out_stream*.
+    #  @param self *Function* to output RPC code for
+    #  @param module *Module* to use for module name
+    #  @param out_stream *File* to output code to
+    #
+    # The routine will look something like:
+    #
+    #	// NAME: BRIEF
+    #	RT1 MODULE::FUNCTION(PT1 PN1,...,PTn PNn,RT2 *RN2,...,RTn *RNn) {
+    #	    Maker_Bus_Module::command_begin(NUMBER);
+    #	    Maker_Bus_Module::PT1_put(P1);
+    #	    ...
+    #	    Maker_Bus_Module::PTn_put(Pn);
+    #	    RT1 R1 = Maker_Bus_Module::RT1_get();
+    #	    *RN2 = Maker_Bus_Module::RT2_get();
+    #	    ...
+    #	    *RNn = Maker_Bus_Module::RTn_get();
+    #	    Maker_Bus_Module::command_end();
+    #	    return RN1;
+    #	}
+    #
+    # where
+    #
+    #  * NUMBER is the RPC number
+    #  * FUNCTION_NAME is the function name
+    #  * BRIEF is the 1 line comment brief
+    #  * PNi is the i'th Parameter Name
+    #  * PTi is the i'th Parameter Type
+    #  * RNi is the i'th Result Name
+    #  * RTi is the i'th Result Type
 
     def cpp_remote_source_write(self, module, out_stream):
-	""" Function: Write *self* to *out_stream* as method that
-	    performs a remote proecedure call."""
+
+	# Check argument types:
+	assert isinstance(module, Module)
+	assert isinstance(out_stream, File)
 
 	# Grab some values from *self*:
 	style = self.style
@@ -529,26 +682,11 @@ class Function(Node):
 	results = self.results
 	results_length = len(results)
 
-	# The routine will look something like:
-	#
-	#	// NAME: BRIEF
-	#	RT1 MODULE::FUNCTION(TP1 P1, ..., TPN PN, RT2 *R2, ...) {
-	#	    Maker_Bus_Module::command_begin(NUMBER);
-	#	    Maker_Bus_Module::TP1_put(P1);
-	#	    ...
-	#	    Maker_Bus_Module::TPN_put(PN);
-	#	    RT1 R1 = Maker_Bus_Module::RT1_get();
-	#	    *R2 = Maker_Bus_Module::RT2_get();
-	#	    ...
-	#	    *RN = Maker_Bus_Module::RTN_get();
-	#	    Maker_Bus_Module::command_end();
-	#	    return R1;
-	#	}
-
 	# Output: "// NAME: BRIEF"
 	out_stream.write("// {0:r}: {1}\n".format(self, self.brief))
 
-	# Output: "RT1 MODULE::FUNCTION(TP1 P1, ..., TPN PN, RT2 *R2, ...) {"
+	# Output:
+        #  "T1 MODULE::FUNCTION(PT1 PN1,...,PTn PNn,RT2 *RN2,...,RTn *RNn) {":
 	format_string = "{0:S" + module.name + "::}{1:b}"
 	#print "format_string='{0}'".format(format_string)
 	out_stream.write(format_string.format(self, style))
@@ -557,25 +695,21 @@ class Function(Node):
 	out_stream.write("{0:i}Maker_Bus_Module::command_begin({1});\n". \
 	  format(style, number))
 
-	# Output:
-	#	    Maker_Bus_Module::TP1_put(P1);
-	#	    ...
-	#	    Maker_Bus_Module::TPN_put(PN);
+	# Output the code to send the parameters over to the module:
 	for parameter in parameters:
+	    # Output: Maker_Bus_Module::PTi_put(PNi);
 	    out_stream.write("{0:i}Maker_Bus_Module::{1}_put({2:n});\n". \
 	      format(style, parameter.type.lower(), parameter))
 
-	# Generate a return statement if appropriate:
+	# Deal with RPC returned results:
 	for index in range(results_length):
 	    result = results[index]
 	    if index == 0:
-		# Output: "RT1 R1 = Maker_Bus_Module::RT1_get();"
+		# Output: "RT1 RN1 = Maker_Bus_Module::RT1_get();"
 		out_stream.write("{0:i}{1} {2} = ". \
 		  format(style, result.type, result.name.lower()))
 	    else:
-	        # Output: *R2 = Maker_Bus_Module::RT2_get();
-		#         ...
-		#         *RN = Maker_Bus_Module::RTN_get();
+	        # Output: "*RNi = Maker_Bus_Module::RTi_get();"
 		out_stream.write("{0:i}*{1} = ". \
 		  format(style, result.type, result.name.lower()))
             out_stream.write("Maker_Bus_Module::{0}_get();\n". \
@@ -585,17 +719,48 @@ class Function(Node):
 	out_stream.write("{0:i}Maker_Bus_Module::command_end();\n". \
 	  format(style))
 
-	# Output: "return R1;"
+	# Output: "return RN1;"
 	if results_length != 0:
 	    out_stream.write("{0:i}return {1};\n". \
 	      format(style, results[0].name.lower()))
 
-	# Output the final closing brace:
+	# Output: "}"
 	out_stream.write("{0:e}\n".format(style))
 
-    def python_write(self, out_stream):
-	""" Function: Write out the python code for *self* to out_stream. """
+    ## @brief Output Python RPC code for *self* to *out_stream*
+    #  @param self *Function* to output Python code for
+    #  @param out_stream *File* to output Python code to
+    #
+    # This routine will output remote procedure call code for *self*
+    # to *out_stream*.  The code looks as follows:
+    #
+    #        def FUNCTION(self, PN1, ..., PNn):
+    #            # BRIEF
+    #            self.request_begin(NUMBER)
+    #            self.request_PT1_put(PN1)
+    #            ...
+    #            self.request_PTn_put(PNn)
+    #            self.request_end()
+    #            RN1 = self.request_RT1_get()
+    #            ...
+    #            RNn = self.request_RTn_get()
+    #            return RN1, ..., RNn
+    #
+    # where:
+    #
+    #  * FUNCTION is the function name
+    #  * BRIEF is the 1 line comment brief
+    #  * PNi is the i'th Parameter Name
+    #  * PTi is the i'th Parameter Type
+    #  * RNi is the i'th Result Name
+    #  * RTi is the i'th Result Type
 
+    def python_write(self, out_stream):
+
+	# Check argument types:
+	assert isinstance(outstream, File)
+
+	# Grab some values from *self*:
 	brief = self.brief
 	name = self.name
 	number = self.number
@@ -603,22 +768,7 @@ class Function(Node):
 	results = self.results
 	style = self.style
 
-	# Output a function remote procedure call method that looks as follows:
-	#
-	#	def NAME(self, PN1, ..., PNn):
-	#	    # BRIEF
-	#	    self.request_begin(NUMBER)
-	#	    self.request_PT1_put(PN1)
-	#	    ...
-	#	    self.request_PTn_put(PNn)
-	#	    self.request_end()
-	#	    RN1 = self.request_RT1_get()
-	#	    ...
-	#	    RNn = self.request_RTn_get()
-	#	    return RN1, ..., RNn
-
-
-	# Output: "def NAME(self, PN1, ..., PNn):":
+	# Output: "def FUNCTION(self, PN1, ..., PNn):":
 	out_stream.write("{0:i}def {1:r}(self".format(style, self))
 	for parameter in parameters:
 	    out_stream.write(", {0:n}".format(parameter))
