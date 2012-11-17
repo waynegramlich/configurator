@@ -831,39 +831,49 @@ class Function(Node):
 
 class Module(Node):
 
+    ## @brief Module constructor
+    #  @param self *Module* to initialize
+    #  @param module_element *ET.Element* to initialize from
+    #  @param style *Style* object that specifies how to format generate code.
+    # 
+    # This method will initialize the contents of *self* by read the
+    # associated XML infromation from *module_element.
+
     def __init__(self, module_element, style):
-	""" Module: Initialize *self* from *module_element*. """
 
-	assert module_element.tag == "Module", "Need a <Module> element"
+	# Check arugment types:
+	assert isinstance(module_element, ET.Element) and \
+	  module_element.tag == "Module"
+	assert isinstance(style, Style)
 
-	attributes = module_element.attrib
-
-	# Extract all of the registers:
-	registers = []
-	for register_element in module_element.findall("Register"):
-	    registers.append(Register(register_element, style))
-
-	# Extract all of the functions:
-	functions = []
-	for function_element in module_element.findall("Function"):
-	    functions.append(Function(function_element, style))
-
-	# Extract all classifications:
+	# Extract all classifications from <Classification ...> tags:
 	classifications = []
 	for classification_element in module_element.findall("Classification"):
 	    classification = Classification(classification_element, style)
 	    classifications.append(classification)
 
-	# Extract overview:
+	# Extract all of the registers from <Register ...> tags:
+	registers = []
+	for register_element in module_element.findall("Register"):
+	    registers.append(Register(register_element, style))
+
+	# Extract all of the functions from <Function ...> tags:
+	functions = []
+	for function_element in module_element.findall("Function"):
+	    functions.append(Function(function_element, style))
+
+	# Extract overview form <Overview> tag:
 	overview = Overview.extract(module_element, style)
+
+	# Extract required attributes:
+	attributes = module_element.attrib
+	name = attributes["Name"]
+	vendor = attributes["Vendor"]
 
 	# Deal with optional attributes:
 	sub_class = None
 	if "Sub_Class" in attributes:
 	    sub_class = attributes["Sub_Class"]
-
-	name = attributes["Name"]
-	vendor = attributes["Vendor"]
 
 	# Fill in the contents of *self*:
 	self.classifications = classifications
@@ -878,33 +888,51 @@ class Module(Node):
 	self.sub_class = sub_class
 	self.vendor = vendor
 
+	# Construct a sorted list of functions and registers:
 	functions_and_registers = []
 	for function in functions:
 	    functions_and_registers.append(function)
 	for register in registers:
 	    functions_and_registers.append(register)
-	
 	functions_and_registers.sort(key=lambda fr: fr.name)
-
 	if len(functions_and_registers) == 0:
 	    functions_and_registers = None
 
+	# Initilize the parent *Node* object:
 	Node.__init__(self,
 	  "Module", name, None, functions_and_registers, style)
 
-    def __format__(self, fmt):
-	""" Format: Return formatted *self* using *fmt* to control
-	    formmating.
-	    If fmt is 'n', the module name is returned. """
+    ## @brief Return formatted version of *self* using *fmt* for format control.
+    #  @param self *Module* to format
+    #  @param fmt A *str* that controls formatting
+    #  @result *str* formatted result string
+    #
+    # This mehod will return a formated version of *self* using *fmt* to
+    # control the formatting.  *fmt* must be one of:
+    #
+    #  * 'n' returns the module name.
 
+    def __format__(self, fmt):
+
+	# Check argument types:
+	assert isinstance(fmt, str)
+
+	# Dispatch on *fmt*:
 	if fmt == 'n':
 	    result = self.name
 	else:
 	    result = "@Module:{0}@".format(fmt)
 	return result
 
+    ## @brief Write C++ header file for *self* out to *file_name*.
+    #  @param self *Module* to generate C++ for
+    #  @param file_name *str* File name to open and write C++ into
+    #  @param with_fences *bool* if *True*, causes fences to be written as well
+    #
+    # This method will write out a C++ header file that contains declarations
+    # for all the functions and registers associated with *module*.
+
     def cpp_header_write(self, file_name, with_fences):
-	""" Module: ... """
 
 	# Grab some values from *self*:
 	style = self.style
@@ -937,6 +965,7 @@ class Module(Node):
 	out_stream.write("#define {0}_H\n\n".format(file_base))
 
 	# Output the include files:
+	#FIXME: This should not be wired in like this!!!
 	out_stream.write("#include <MB7.h>\n")
 	out_stream.write("\n")
 
@@ -982,25 +1011,38 @@ class Module(Node):
 	# All done:
 	out_stream.close()
 
-    def cpp_local_header_write(self, file_name):
-	""" Module: This routine write class definition file for *self*
-	    for local use (i.e. not remote access via RPC.)  The class
-	    definition is written to *file_name*.  If *file_name* does
-	    not exist, it will be created.  If *file_name* does exist,
-	    it is replaced such that all the code in the fenced off area
-	    inside the source code is retained. """
+    ## @brief Write a local C++ header file for *self* to *file_name*
+    #  @param self *Module* to write C++ header for
+    #  @param file_name *str* File name to open and write C++ into
+    #
+    # This method will write a local C++ header file for *self* into the
+    # file name *file_name*.  If *file_name* does  not exist, it will be
+    # created.  If *file_name* does exist, it is replaced such that all
+    # the code in the fenced off area inside the source code is retained.
 
+    def cpp_local_header_write(self, file_name):
+	assert isinstance(file_name, str)
 	self.cpp_header_write(file_name, True)
 
+
+    ## @brief Write local C++ code for *self* into *file_name*
+    #  @param self *Module* to geneate C++ code for
+    #  @param file_name *file_name* file name to open and pour C++ code into
+    #
+    # This method will write out local C++ code for *self* into *file_name*.
+    # This basically consists of of some include files, a class constructor
+    # for *self*, and each of the register and function methods.
+
     def cpp_local_source_write(self, file_name):
-	""" Module: This routine will update the contents of file named
-	    *file_name* using *self*.  If *file_name* does not exist,
-	    it will be created. """
+
+	# Check argument types:
+	assert isinstance(file_name, str)
 
 	# Grab some values from *self*:
 	style = self.style
 	name = self.name
 
+	# Read in the fenced code from *file_name*:
 	self.fences_read(file_name)
 
 	# Now write out the new verision of *file_name* with the
@@ -1010,7 +1052,8 @@ class Module(Node):
 	# Output include files:
 	out_stream.write("// Generated file: only edit in designated areas!\n")
 	out_stream.write("#include <{0}_Local.h>\n".format(self.name))
-	#KLUDGE:
+
+	#FIXME: This #include should not be hard wired in!!!
 	out_stream.write("#include <MB7.h>\n")
 	out_stream.write("\n")
 
@@ -1036,14 +1079,16 @@ class Module(Node):
 	# Wrap everything up:
 	out_stream.close()
 
-    def cpp_remote_header_write(self, file_name):
-	""" Module: This routine write class definition file for *self*
-	    for local use (i.e. not remote access via RPC.)  The class
-	    definition is written to *file_name*.  If *file_name* does
-	    not exist, it will be created.  If *file_name* does exist,
-	    it is replaced such that all the code in the fenced off area
-	    inside the source code is retained. """
+    ## @brief Write a C++ header for remote access to *self* out to *file-name*
+    #  @param self *Module* to write C++ header information for.
+    #  @param file_name
 
+    # This method will write class definition file for *self*
+    # for remote use (i.e. remote access via RPC.)  The class
+    # definition is written to *file_name*. 
+    def cpp_remote_header_write(self, file_name):
+
+	assert isinstance(file_name, str)
 	self.cpp_header_write(file_name, False)
 
     def cpp_remote_source_write(self, file_name):
@@ -1141,9 +1186,27 @@ class Module(Node):
 	out_stream.write("{0:i}return 0;\n".format(style))
 	out_stream.write("{0:e}".format(style))
 
+    ## @brief Read in the fenced code for *file_name* into a table of *self*
+    #  @param self *Module* that contains the fences table
+    #  @param file_name *str* file name of the file to be read
+    #
+    # A this method will read in all of the fenced code for the file
+    # named *file_name* into a fences table for *self*.  A fence is
+    # user supplied code that is spliced into a file of computer 
+    # generated code.  A fence looks as follows:
+    #
+    #          //////// Edit begins here: {FENCE_NAME}
+    #          ...
+    #          //////// Edit ends here: {FENCE_NAME}
+    #
+    # where "..." is zero, one or more lines of user supplied code.
+    # This code reads in the "..." for each fence and hangs onto it
+    # for subsequent out during code generation.
+
     def fences_read(self, file_name):
-	""" Module: Read in the various fences from {file_name} and
-	    save them in *self*.  """
+
+	# Check argument types:
+	assert isinstance(self, file_name)
 
 	# Grab some values from *self*:
         fences = {}
@@ -1196,19 +1259,53 @@ class Module(Node):
 	# Hang onto the retained chunks:
 	self.fences = fences
 
-    def fence_write(self, fence_name, out_stream):
-	""" Module: Write out the edit safe fence for *fence_name*
-	    to *out_stream*.  The retained chunks associated with
-	    *fence_name* are stored in *self*. """
+    ## @brief Write fenced code for *fence_name* from *self* to *out_stream*
+    #  @param self *Module* object that contains fenced code table
+    #  @param fence_name *str* Name of fence to write out
+    #  @param out_stream *File* file output stream that is open for writing
+    #
+    # A this method will write out the fenced code for *fence_name* out
+    # to *out_stream* using the fences table in *self*.  A fence is
+    # user supplied code that is spliced into a file of computer 
+    # generated code.  A fence looks as follows:
+    #
+    #          //////// Edit begins here: {FENCE_NAME}
+    #          ...
+    #          //////// Edit ends here: {FENCE_NAME}
+    #
+    # where "..." is zero, one or more lines of user supplied code.
+    # This code is read from *file_name prior to overwriting the file
+    # with newly generated code.
 
+    def fence_write(self, fence_name, out_stream):
+
+	# Check argument types:
+	assert isinstance(fence_name, str)
+	assert isinstance(out_stream, File)
+
+	# Output: "//////// Edit begins here: {FENCE_NAME}"
 	out_stream.write("{0} {1}\n".format(self.fence_begin, fence_name))
+
+	# Write out any fenced code that was previously read in:
 	fences = self.fences
 	if fence_name in fences:
 	    out_stream.writelines(fences[fence_name])
+
+	# Output "//////// Edit ends here: {FENCE_NAME}"
 	out_stream.write("{0} {1}\n".format(self.fence_end, fence_name))
+
+    ## @brief Write out Python RPC access code for *self* to *file_name*
+    #  @param self *Module* to write Python code for
+    #  @param file_name *str* file name to write Python code into
+    #
+    # This method will write out Python access code for *self* out to
+    # the file named *file_name*.
 
     def python_write(self, file_name):
 	""" Module: Write the python code for *self* to *file_name*. """
+
+	# Check argument types:
+	assert isinstance(file_name, str)
 
 	# Grab some values from *self*:
 	functions = self.functions

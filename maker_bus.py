@@ -145,7 +145,7 @@ class Maker_Bus_Base:
 	done = False
 	while not done:
 	    byte = serial.read(1)
-	    #print "byte={0}".format(ord(byte))
+	    print "byte={0}".format(ord(byte))
 	    if byte == '\n':
 		ids.append("".join(line[1:]))
 		done = len(line) != 0 and line[0] == '!'
