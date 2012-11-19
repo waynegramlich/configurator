@@ -1091,9 +1091,19 @@ class Module(Node):
 	assert isinstance(file_name, str)
 	self.cpp_header_write(file_name, False)
 
+    ## @brief Write C++ source file for RPC access to *self to *file_name*.
+    #  @param self *Module* to write C++ source code for
+    #  @param file_name *str* Name of file to write C++ code to
+    #
+    # This routine will write out a C++ source file that contains access
+    # methods to use RPC to access remote functions and registers on
+    # the remote module *self*.  The code is written out to the file
+    # name *file_name*.
+
     def cpp_remote_source_write(self, file_name):
-	""" Module: This routine will write out the C++ source code
-	    for the remote methods for *self* to the file name *file_name*. """
+
+	# Check argument types:	
+	assert isinstance(file_name, str)
 
 	# Grab some values from *self*:
 	style = self.style
@@ -1126,9 +1136,19 @@ class Module(Node):
 	# Wrap everything up:
 	out_stream.close()
 
+    ## @brief Write "slave" C++ to support RPC's for *self* out to *file_name*.
+    #  @param self *Module* for write C++ code for
+    #  @param file_name *str* Name of file to write C++ code to
+    #
+    # This method will write out a C++ framework to support remote procedure
+    # calls for *self*.  This frame work will have places where user supplied
+    # code is provided (called a fence.)  The code is written out to
+    # *file_name*.
+
     def cpp_slave_write(self, file_name):
-	""" Module: Write the "arduino" slave remote procedure call hander
-	    code for *self* to *out_stream*. """
+
+	# Check argument types:
+	assert isinstance(file_name, str)
 
 	# Grab some values from *self*:
 	functions = self.functions
@@ -1302,7 +1322,6 @@ class Module(Node):
     # the file named *file_name*.
 
     def python_write(self, file_name):
-	""" Module: Write the python code for *self* to *file_name*. """
 
 	# Check argument types:
 	assert isinstance(file_name, str)
@@ -1345,28 +1364,32 @@ class Module(Node):
 	style.indent_adjust(-1)
 	out_stream.close()
 
-## @class Modules
+# Not used any more:
+#
+# # @class Modules
 #
 # A list of Modules
 #
 # This class simply contains a list of *Module* objects that have
 # been read from the modules "database".
-
-class Modules(Node):
-    """ Modules: ... """
-
-    def __init__(self, sub_nodes):
-	Node.__init__(self, "Modules", "Modules", None, sub_nodes, self.style)
-
-    def lookup(self, vendor, module_name):
-	print "lookup(vendor='{0}', module_name='{1}')". \
-	  format(vendor, module_name)
-	for module in self.sub_nodes:
-	    print "module:{0}".format(module.name)
-	    if module.name == module_name:
-		print "match"
-		return module
-	return None
+#
+#class Modules(Node):
+#    """ Modules: ... """
+#
+#    ## @brief Initialize a list of modules.
+#
+#    def __init__(self, sub_nodes):
+#	Node.__init__(self, "Modules", "Modules", None, sub_nodes, self.style)
+#
+#    def lookup(self, vendor, module_name):
+#	print "lookup(vendor='{0}', module_name='{1}')". \
+#	  format(vendor, module_name)
+#	for module in self.sub_nodes:
+#	    print "module:{0}".format(module.name)
+#	    if module.name == module_name:
+#		print "match"
+#		return module
+#	return None
 
 ## @class Module_Use
 #
@@ -1376,7 +1399,18 @@ class Modules(Node):
 # can contain multiple instances of the same kind of module.
 
 class Module_Use(Node):
-    """ Module_Use: ... """
+
+    ## @brief Module_Use constructor
+    #  @param self *Module_Use* to initialize
+    #  @param name_vendor_module *None* or *tuple* of (name, vendor, module)
+    #  @param module_uses *None* or *list* of module uses
+    #  @param module_use_element *None* or *ET.Element* to read XML from
+    #  @param modules_table *None* or *dict* Table of *Modules*
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # This method will initialize *self* from either *name_vendor_module*
+    # looked up from *module_uses* or extract the information from
+    # *module_use_element*
 
     def __init__(self, name_vendor_module, module_uses,
       module_use_element, modules_table, style):
@@ -1385,18 +1419,16 @@ class Module_Use(Node):
 	assert name_vendor_module == None or \
 	  isinstance(name_vendor_module, tuple)
 	assert module_uses == None or isinstance(module_uses, list)
-	#if module_uses != None:
-	#    for module_use in module_uses:
-	#	if not isinstance(module_use, Module_Use):
-	#	    print module_use
-	#	    assert False
 	assert module_use_element == None or \
 	  isinstance(module_use_element, ET.Element)
 	assert modules_table == None or isinstance(modules_table, dict)
 	assert isinstance(style, Style)
 
+	# Make sure that *module_uses* is a list:
 	if module_uses == None:
 	    module_uses = []
+
+	# Initialize from *module_use_element* if it is not *None*:
 	if module_use_element != None:
 	    # Extract the module name, vendor, and vendor module name:
 	    attributes = module_use_element.attrib
@@ -1404,52 +1436,79 @@ class Module_Use(Node):
 	    vendor = attributes["Vendor"]
 	    module_name = attributes["Module"]
 
-	    # Extract all of the sub Mmodule_Use's:
+	    # Extract all of the sub Module_Use's:
 	    for sub_module_use_element in \
 	      module_use_element.findall("Module_Use"):
 		module_use = Module_Use(None, None,
 		  sub_module_use_element, modules_table, style)
 		module_uses.append(module_use)
-
-	    # This may go away:
-	    #module_key = (vendor, module_name)
-	    #if module_key in modules_table:
-	    #	module = modules_table[module_key]
-	    #	module_uses += module.functions + module.registers
-	    #else:
-	    #	print "Could not find module '{0}':'{1}'". \
-	    #	  format(vendor, module_name)
 	elif name_vendor_module != None:
+	    # Other wise initialize from *name_vendor_module*:
 	    #print "name_vendor_module=", name_vendor_module
 	    name = name_vendor_module[0]
 	    vendor = name_vendor_module[1]
 	    module_name = name_vendor_module[2]
 	else:
-            assert False, "Must provide either a triple or an element"
+	    # Must provide either a triple or an element:
+	    assert False
 
+	# Load up *self*:
 	self.name = name
 	self.vendor = vendor
 	self.module_name = module_name
 	self.module_uses = module_uses
 	self.style = style
 
+	# Initialize *Node* base class:
 	tree_text = "{0}".format(name, vendor, module_name)
 	Node.__init__(self, "Module_Use", tree_text, None, module_uses, style)
 
-    def sub_node_insert(self, index, new_node):
-	""" Module_Use: Insert *new_node* into *self* at the
-	    *index*'th slot. """
+    ## @brief Insert *new_node* into the module uses list for *self* at *index*
+    #  @param self *Module_Use* to modify
+    #  @param index *int* location to insert *new_node* into
+    #  @param new_node *Node* base class object to insert into *self*
+    #
+    # This method will insert *new_node* into the module uses list of *self*
+    # at the *index*'th slot.  *new_node* must be an object that uses
+    # *Node* as its base class.
 
+    def sub_node_insert(self, index, new_node):
+
+	# Check argument types:
+	assert isinstance(index, int)
+	assert isinstance(new_node, Node)
+
+	# Perform the insert:
 	self.module_uses.insert(index, new_node)
 
-    def sub_node_delete(self, index):
-	""" Module_Use: Delete the *index*'th node from *self*. """
+    ## @brief Delete the *index*'th module use from *self*
+    #  @param self "Module_Use* to modify
+    #  @param index *int* Index slot of module use to delete
+    #
+    # This method will delete the *index*'th module use from *self*
 
+    def sub_node_delete(self, index):
+
+	# Check argument types:
+	assert isinstance(index, int)
+
+	# Perform the deletion:
 	del self.module_uses[index]
 
+    ## @brief Write XML of *self* to *out_stream* indented by *indent*.
+    #  @param self *Module_Use* to write out
+    #  @param indent *int* The amount to indent it by
+    #  @param out_stream *File* to write the XML out to
+    #
+    # This method will write *self* in XML format to *out_stream* indented
+    # by *indent*.
+
     def xml_write(self, indent, out_stream):
-	""" Module_Use: Write *self* to *out_stream* indented by *indent*. """
 	
+	# Check argument types:
+	assert isinstance(indent, int)
+	assert isinstance(out_stream, File)
+
 	# Output the opening <Module_Use...>:
 	out_stream.write("{0}<Module_Use".format("  " * indent))
 	out_stream.write(' Name="{0}"\n'.format(self.name))
@@ -1485,20 +1544,40 @@ class Module_Use(Node):
 #        </Overview>
 
 class Overview:
-    """ Overview: This class represents a module overview"""
+
+    ## @brief Initialize *self* from XML in *overview_element*.
+    #  @param self *Overview* to fill from *overview_element*.
+    #  @param overview_element *ET.Element* to extract XML from
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # This method will initialize *self* with the Overview XML tag contained
+    # in *overview_element*.
 
     def __init__(self, overview_element, style):
-	""" Overview: Initialize *self* from *overview_element*. """
 
-	assert overview_element.tag == "Overview", \
-	  "Need <Overview> tag"
+	# Check argument types:
+	assert isinstance(overview_element, ET.Element)
+	assert overview_element.tag == "Overview"
+	assert isinstance(style, Style)
 
+	# Load up *self*
 	self.style = style
 	self.text = overview_element.text
 
+    ## @brief Extract and return *Overview* object from *parent_element*.
+    #  @param parent_element *ET.Element* that contains Overview XML
+    #  @param style *Style* object that specifies how to format generate code.
+    #  @result *Overview* object that extracted is returned.
+    # 
+    # This static method will extract the XML Overview tag from
+    # *parent_element* and return it.
+
     @staticmethod
     def extract(parent_element, style):
-	""" Overview: Return *Overview* extracted from *parent_element*. """
+
+	# Check argument types:
+	assert isinstance(parent_element, ET.Element)
+	assert isinstance(style, Style)
 
 	# Extract all <Overview> tags:
 	overviews = []
@@ -1526,26 +1605,40 @@ class Overview:
 #        <Parameter Name="..." Type="..." Brief="...">
 
 class Parameter:
-    """ Parameter: This class represents a function parameter. """
+
+    ## @brief Initialize *self* from the XML in *parameter_element*.
+    #  @param self *Parameter* to initialize
+    #  @param parameter_element *ET.Element* to extract XML from
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # This method will initialize *self* from the XML in *parameter_element*.
 
     def __init__(self, parameter_element, style):
-	""" Parameter: Initialize *self* from *parameter_element*. """
 
-	assert parameter_element.tag == "Parameter", \
-	  "Need a <Parameter ...> element"
+	# Check argument types:
+	assert isinstance(parameter_element, ET.Element)
+	assert parameter_element.tag == "Parameter"
+	assert isinstance(style, Style)
 
+	# Load up *self*:
 	attributes = parameter_element.attrib
-
 	self.brief = attributes["Brief"]
 	self.name = attributes["Name"]
 	self.style = style
 	self.type = attributes["Type"]
 
+    ## @brief Return a formated string for *self* using *fmt* for format control
+    #  @param self *Parameter* to format
+    #  @param fmt *str* that contains format control information
+    #
+    # This method will format *self* using *fmt* for format control.  *fmt*
+    # must be one of the following:
+    #
+    #  * 't' return the type of *self*
+    #  * 'n' return the name of *self*
+    #  * 'c' return the C/C++ type of *self* (i.e. "Type Name")
+
     def __format__(self, fmt):
-	""" Parameter: Return a formatted version of *self* controlled
-	    by *fmt*.  If *fmt* is a 't', return the type of *self*.
-	    If *fmt* is a 'n', return the name of *self*.  If *fmt*
-	    is a 'c', return a C/C++ typed name. """
 
 	if fmt == "t":
 	    result = self.type
@@ -1571,7 +1664,17 @@ class Parameter:
 #        </Project>
 
 class Project(Node):
-    """ """
+
+    ## @brief Initialize *self* from XML in *project_element*.
+    #  @param self *Project* to initialize
+    #  @param project_element *None* *ET.Element* that contains the XML
+    #  @param modules_table *dict* module look up table
+    #  @param style *Style* object that specifies how to format generate code.
+    #
+    # This method will initialize *self* from the XML in project_element.
+    # *modules_table* is used to construct a table of the *modules* that
+    # are read in.  If *project_element* is *None*, a *self* is initialized
+    # to an empty project.
 
     def __init__(self, project_element, modules_table, style):
 
@@ -1581,10 +1684,13 @@ class Project(Node):
 	assert isinstance(modules_table, dict)
 	assert isinstance(style, Style)
 
-	name = "my_project"
+	# Dispatch on whether *project_element* is empty or not
 	module_uses = []
-	if project_element != None:
+	if project_element == None:
 	    # Just create an empty project:
+	    name = "my_project"
+	else:
+            # Extract <Project> tag from *project_element*:
 	    attributes = project_element.attrib
 
 	    # Grab the name attribute:
@@ -1603,26 +1709,49 @@ class Project(Node):
 	# Initialize the *Node* base class:
 	Node.__init__(self, "Project", "Project", None, module_uses, style)
 
-    def sub_node_delete(self, index):
-	""" Project: Delete the *index*'th node from *self*. """
+    ## @brief Delete the *index*'th sub node from *self
+    #  @param self *Project* to delete sub node from
+    #  @param index *int* The index of the sub node to delete
+    #
+    # This method will delete the *index*'th sub node of *self*.
 
+    def sub_node_delete(self, index):
+
+	# Check argument types:
+	assert isinstance(index, int)
+
+	# Perform the deletion:
 	del self.module_uses[index]
 
-    def xml_write(self, indent, out_stream):
-	""" Project: Write *self* to *out_stream* indented by *indent*. """
+    ## @brief Write *self* out as XML to *out_stream* indented by *indent*
+    #  @param self *Project* to write out as XML
+    #  @param indent *int* The amount to indent the XML by
+    #  @param out_stream *File* to write XML out to
+    #
+    # This method will write *self* out as XML to *out_stream* indented
+    # by *indent*.  Currently, *indent* must be 0.
 
+    def xml_write(self, indent, out_stream):
+
+        # Check argument types:
+	assert isinstance(indent, int)
 	assert indent == 0
+	assert isinstance(out_stream, File)
+
+	# Output the <Project ... > tag:
 	out_stream.write('<Project Name="{0}">\n'.format(self.name))
 	
+	# Output all the module uses:
 	module_uses = self.module_uses
 	for module_use in module_uses:
 	    module_use.xml_write(indent + 1, out_stream)
+
+	# Output the </Project> tag:
 	out_stream.write('</Project>\n')
 	
-
 ## @class Register
 #
-# A module Register
+# A module Register.
 #
 # A register represents a single register that is accessible via
 # remote procedure call.  It corresponds as the following XML:
@@ -1634,7 +1763,6 @@ class Project(Node):
 #        </Register>
 
 class Register(Node):
-    """ Register: This class represents a module register.  """
 
     def __init__(self, register_element, style):
 	""" Register: Initialize self from *register_element*. """
