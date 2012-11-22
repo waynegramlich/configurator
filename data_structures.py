@@ -2438,8 +2438,16 @@ class XML:
 
 	# Now parse the modified XML lines into a top level element tree root:
 	root_element = None
+
+	# The commented code works for Python 2.7:
+	#try:
+	#    root_element = ET.fromstringlist(replaced_lines)
+	#except ET.ParseError as e:
+        #    print "'{0}': {1}".format(file_name, e)
+
+	# This code works for Python 2.6:
 	try:
-	    root_element = ET.fromstringlist(replaced_lines)
+	    root_element = ET.fromstring("".join(replaced_lines))
 	except ET.ParseError as e:
             print "'{0}': {1}".format(file_name, e)
 

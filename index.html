@@ -61,7 +61,19 @@ That should provide enough of an overview for now.
 								</P><P>
 The source code is available via
     <A HRef="https://github.com/waynegramlich/configurator">
-github<A>.
+github<A>.  The know dependencies are:
+								<UL><LI>
+    Python 2.7 (Python 2.6 should work as well).
+								</LI><LI>
+    The appropriate idle (Python Integrated Deveolpment
+    Environment) that comes with Python (the tree widget
+    currently comes from idle.)
+								</LI><LI>
+    PySerial to talk to a serial port (USB or UART.)
+    Currently, you only need to have PySerial installed.
+    Configurator fails gracefully if it does not successfully
+    open /dev/ttyUSB0.
+								</LI></UL>
 								</P><P>
 The
     <A HRef="html/index.html">
