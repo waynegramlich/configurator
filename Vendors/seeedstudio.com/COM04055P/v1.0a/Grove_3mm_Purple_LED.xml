@@ -1,0 +1,27 @@
+<Module Name="Grove 3mm Purple LED" Vendor="seeedstudio.com"
+ Brief="Grove 3mm Purple LED">
+  <Overview>
+    The Grove Purple LED (3mm) is a purple LED twig.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Display" Level3="LED" />
+  <Register Name="duty_cycle" Type="UByte" Number="0"
+   Brief="LED duty cycle">
+    <Description>
+	This register specifes the on duty cycle as a percentage
+	value between 0 and 100.  0 means totally off and 100
+	means totally on.
+    </Description>
+  </Register>
+  <Register Name="frequency" Type="UShort" Number="2"
+   Brief="LED refresh frequency">
+    <Description>
+	This register specifes the refresh frequency in Hertz
+	(cycles per second) as a value between 1 and 1000.
+	A frequency value of 0 means the LED is off.  A value
+	of 1 means the LED is cycled at 1 Hertz.  A value of
+	1000 means the LED is cycled at 1000 Hertz.
+    </Description>
+  </Register>
+</Module>

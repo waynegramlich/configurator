@@ -26,7 +26,7 @@ class Maker_Bus_Base:
 	self.request_safe = 0
 	self.response = []
 	self.serial = serial
-	self.trace = False
+	self.trace = True
 	self.trace_pad = ""
 
 	serial.open()
@@ -137,21 +137,39 @@ class Maker_Bus_Base:
     def discovery_mode(self):
 	""" Maker_Bus_Base: Perform discovery mode """
 
+	trace = self.trace
+	if trace:
+	    trace_pad = self.trace_pad
+	    self.trace_pad = trace_pad + " "
+
+
 	serial = self.serial
 	serial.write(chr(0xc4))
+	if trace:
+	    print "{0}write(0xc4)".format(trace_pad)
+
 	serial.flush()
 	line = []
 	ids = []
 	done = False
 	while not done:
 	    byte = serial.read(1)
-	    #print "byte={0}".format(ord(byte))
+
+	    if trace:
+		print "{0}read() => 0x{1:x}".format(trace_pad, ord(byte))
+
 	    if byte == '\n':
 		ids.append("".join(line[1:]))
 		done = len(line) != 0 and line[0] == '!'
 		del line[:]
 	    else:
 		line.append(byte)
+
+	if trace:
+	    self.trace_pad = trace_pad
+	    print "{0}<=Maker_Bus.discovery_mode() =>{1}". \
+	      format(trace_pad, ids)
+
 	return ids
 
     def frame_get(self):
@@ -191,11 +209,20 @@ class Maker_Bus_Base:
 	serial = self.serial
 	if (frame > 0xff or (0xc1 <= frame and frame <= 0xc4)):
 	    # Send {frame} as two bytes:
-            serial.write(chr(0xc0 | ((frame >> 7) & 3)))
-            serial.write(chr(frame & 0x7f))
+            byte1 = 0xc0 | ((frame >> 7) & 3)
+	    byte2 = frame & 0x7f
+            serial.write(chr(byte1))
+            serial.write(chr(byte2))
+
+            if trace:
+		print "{0}write(0x{1:x});write(0x{2:x})". \
+		  format(trace_pad, byte1, byte2)
 	else:
 	    # Send {frame} as one byte:
 	    serial.write(chr(frame))
+
+            if trace:
+		print "{0}write(0x{1:x})".format(trace_pad, frame)
 	    
 	if trace:
 	    self.trace_pad = trace_pad
@@ -329,6 +356,29 @@ class Maker_Bus_Base:
 
 	return ubyte
 
+    def response_ushort_get(self):
+	""" {Maker_Bus}: Return next unsigned short from response in {self}. """
+
+	response = self.response
+
+	trace = self.trace
+	if trace:
+	    trace_pad = self.trace_pad
+	    self.trace_pad = trace_pad + " "
+	    print "{0}=>Maker_Bus.response_ubyte_get() response={1}". \
+	      format(trace_pad, response)
+
+	high_ubyte = self.response_ubyte_get()
+	low_ubyte = self.response_ubyte_get()
+	ushort = (high_ubyte << 8) | low_ubyte
+
+	if trace:
+	    print "{0}<=Maker_Bus.response_ubyte_get()=>{1}". \
+	      format(trace_pad, ushort)
+	    self.trace_pad = trace_pad
+
+	return ushort
+
 ## @class Maker_Bus_Module
 #
 # Per module base class to interface with MakerBus modules.
@@ -390,8 +440,14 @@ class Maker_Bus_Module:
     def request_ubyte_put(self, ubyte):
 	""" """
 
-	self.maker_bus_base.request_ubyte_put(ubyte)
+	self.maker_bus_base.request_ubyte_put(ubyte & 0xff)
 
+    def request_ushort_put(self, ushort):
+	""" """
+
+	# High byte first, followed by low byte:
+	self.request_ubyte_put(ushort >> 8)
+	self.request_ubyte_put(ushort)
 
     def response_begin(self):
 	""" """
@@ -412,6 +468,13 @@ class Maker_Bus_Module:
 	""" """
 
 	return self.maker_bus_base.response_ubyte_get()
+
+    def response_ushort_get(self):
+	""" """
+
+	high_byte = self.response_ubyte_get()
+	low_byte = self.response_ubyte_get()
+	return (high_byte << 8) | low_byte
 
     def response_end(self):
 	""" """

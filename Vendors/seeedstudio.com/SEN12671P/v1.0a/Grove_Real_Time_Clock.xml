@@ -1,0 +1,16 @@
+<Module Name="Grove Real Time Clock" Vendor="seeedstudio.com"
+ Brief="Real Time Clock Twig">
+  <Overview>
+    The RTC module is a member of Grove System Twig.  It is based on
+    the clock chip DS1307 which supports the I2C protocol.  It uses
+    a Lithium cell battery (CR1225).  The clock/calendar provides
+    seconds, minutes, hours, day, date,month, and year information.
+    The end of the month date is automatically adjusted for months
+    with fewer than 31 days, including corrections for leap year.
+    The clock operates in either the 24-hour or 12-hour format with
+    AM/PM indicator.  (Note: Battery is not included.)
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Time" />
+</Module>

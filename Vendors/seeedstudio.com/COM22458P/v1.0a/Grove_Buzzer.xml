@@ -1,0 +1,30 @@
+<Module Name="Grove Buzzer" Vendor="seeedstudio.com"
+ Brief="Grove Buzzer">
+  <Overview>
+    This is a simple yet enjoyable twig to use.  The piezo can be
+    connected to digital outputs, and will emit a tone when the output
+    is high.  Alternatively it can be connected to an analog pulse-width
+    modulation output to generate various tones and effects.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Register Name="duty_cycle" Type="UByte" Number="0"
+   Brief="LED duty cycle">
+    <Description>
+	This register specifes the on duty cycle as a percentage
+	value between 0 and 100.  0 means totally off and 100
+	means totally on.
+    </Description>
+  </Register>
+  <Register Name="frequency" Type="UShort" Number="2"
+   Brief="LED refresh frequency">
+    <Description>
+	This register specifes the refresh frequency in Hertz
+	(cycles per second) as a value between 1 and 100.
+	A frequency value of 0 means the LED is off.  A value
+	of 1 means the buzzer is cycled at 1 Hertz.  A value of
+	100 means the buzzer is cycled at 100 Hertz.
+    </Description>
+  </Register>
+</Module>

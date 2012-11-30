@@ -233,6 +233,8 @@ class Application(Frame):
 	""" Application: This method is invoked whenever it is time to
 	    update the button highlights. """
 
+	modules_table = self.modules_table
+
 	# Now figure out if we have something that will work:
 	selections_selected_item = self.selections_selected_item
 	selections_selected_node = selections_selected_item.node
@@ -271,7 +273,20 @@ class Application(Frame):
 
 	# Deal with [Open] button:
 	self.button_highlight(self.open_button, not self.project_modified,
-	  "Project is modifies, need to save first")
+	  "Project is modified, need to save first")
+
+	# Deal with [Generate] button:
+	generate = False
+	is_module_use = isinstance(project_selected_node, Module_Use)
+	if is_module_use:
+	    module_key = \
+	      (project_selected_node.vendor, project_selected_node.module_name)
+	    #print "module_key=", module_key
+	    if module_key in modules_table:
+                module = modules_table[module_key]
+		generate = module.generate
+	self.button_highlight(self.generate_button, generate,
+	  "Can not generate code for this module")
 
     def call_button_click(self):
 	""" Application: This method is called when it is time to
@@ -282,6 +297,12 @@ class Application(Frame):
 	    # Make sure we have a *Function*:
 	    function = self.register_or_function
 	    assert isinstance(function, Function)
+
+	    # Grab the associated *Module_Use*:
+	    project_selected_item = self.project_selected_item
+	    project_selected_node = project_selected_item.node
+	    assert isinstance(project_selected_node, Module_Use)
+	    module_use = project_selected_node
 
 	    # Positive function numbers are normal and negative are "special":
 	    function_number = function.number
@@ -344,7 +365,8 @@ class Application(Frame):
 
 		    # First, start the command:
 		    maker_bus_module = self.maker_bus_module
-		    maker_bus_module.request_begin(function_number)
+		    maker_bus_module.request_begin(module_use.offset + \
+		      function_number)
 
 		    # Second, iterate over all the parameters:
 		    for index in range(parameters_length):
@@ -378,6 +400,8 @@ class Application(Frame):
 			    number = maker_bus_module.response_logical_get()
 			elif type == "UByte":
 			    number = maker_bus_module.response_ubyte_get()
+			elif type == "UShort":
+			    number = maker_bus_module.response_ushort_get()
 			else:
 			    assert False, "Finish dispatch table"
 			call_entry_text += prefix + str(number)
@@ -482,6 +506,33 @@ class Application(Frame):
 	    entry.delete(0, END)
 	    entry.configure(disabledbackground = "#FF8888", state = DISABLED)
 
+    def generate_button_click(self):
+	#print "[Generate] button click"
+
+	why_not = self.open_button.why_not
+	if why_not == None:
+            # Pop up a file name chooser:
+	    print "[Generate] button clicked"
+
+	    project_selected_item = self.project_selected_item
+	    project_selected_node = project_selected_item.node
+	    assert isinstance(project_selected_node, Module_Use)
+
+	    name = project_selected_node.name
+	    sketch_generator = Sketch_Generator(name,
+	      self.modules_table, self.style)
+
+	    project_selected_node.sketch_generate(sketch_generator, 0)
+
+	    offsets_modified = sketch_generator.write()
+	    if offsets_modified:
+		self.project_modified = True
+		self.buttons_update()
+	    print "off_mod={0} pro_mod={1}". \
+	      format(offsets_modified, self.project_modified)
+	else:
+	    self.warn(why_not)
+
     def get_button_click(self):
 	""" Application: This method is called when it is time to
 	    get a register value from the currently selected module. """
@@ -489,15 +540,25 @@ class Application(Frame):
 	#print "[Get] button clicked"
 	why_not = self.get_button.why_not
 	if why_not == None:
-	    function = self.register_or_function
-	    type = function.type
-	    number = function.number
+	    project_selected_item = self.project_selected_item
+	    project_selected_node = project_selected_item.node
+	    assert isinstance(project_selected_node, Module_Use)
+	    module_use = project_selected_node
+
+	    register = self.register_or_function
+	    assert isinstance(register, Register)
+	    type = register.type
+	    number = register.number
 	    maker_bus_module = self.maker_bus_module
-	    maker_bus_module.request_begin(number)
+	    maker_bus_module.request_begin(module_use.offset + number)
 	    maker_bus_module.request_end()
 	    result = 0
 	    if type == "Logical":
 		result = int(maker_bus_module.response_logical_get())
+	    elif type == "UByte":
+		result = maker_bus_module.response_ubyte_get()
+	    elif type == "UShort":
+		result = maker_bus_module.response_ushort_get()
 	    else:
 		assert False
 	    get_entry = self.get_entry
@@ -604,12 +665,13 @@ class Application(Frame):
 	style = self.style
 
 	vendor_modules = []
-	vendor_module_file_names = glob.glob("Vendors/*/*.xml")
+	vendor_module_file_names = glob.glob("Vendors/*/*/*/*.xml")
 	for vendor_module_file_name in vendor_module_file_names:
 	    style.file_name_set(vendor_module_file_name)
 	    vendor_module_element = xml.read(vendor_module_file_name, "Module")
 	    XML_Check.element_check(vendor_module_element, tags)
-	    vendor_module = Module(vendor_module_element, style)
+	    vendor_module = \
+	      Module(vendor_module_element, vendor_module_file_name, style)
 	    vendor_modules.append(vendor_module)
 	return vendor_modules
 
@@ -759,16 +821,26 @@ class Application(Frame):
 
 	why_not = self.set_button.why_not
 	if why_not == None:
-	    function = self.register_or_function
-	    type = function.type
-	    number = function.number
+	    project_selected_item = self.project_selected_item
+	    project_selected_node = project_selected_item.node
+	    assert isinstance(project_selected_node, Module_Use)
+	    module_use = project_selected_node
+
+	    register = self.register_or_function
+	    assert isinstance(register, Register)
+	    type = register.type
+	    number = register.number
 	    maker_bus_module = self.maker_bus_module
 	    set_entry_text = self.set_entry.get()
 	    if set_entry_text.isdigit():
 		value = int(set_entry_text)
-		maker_bus_module.request_begin(number + 1)
+		maker_bus_module.request_begin(module_use.offset + number + 1)
 		if type == "Logical":
 		    result = maker_bus_module.request_logical_put(value)
+		elif type == "UByte":
+		    result = maker_bus_module.request_ubyte_put(value)
+		elif type == "UShort":
+		    result = maker_bus_module.request_ushort_put(value)
 		else:
 		    assert False
 		maker_bus_module.request_end()
@@ -928,6 +1000,9 @@ class Application(Frame):
 	self.open_button = \
 	  self.button_create(buttons_frame, "Open", 0, 4,
 	  self.open_button_click)
+        self.generate_button = \
+	  self.button_create(buttons_frame, "Generate", 0, 5,
+          self.generate_button_click)
 	self.warn_label = \
 	  self.label_create(buttons_frame, 1, 0, 5, "Warnings go here:")
 

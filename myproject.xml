@@ -1,24 +1,43 @@
 <Project Name="myproject">
-  <Module_Use Name="Raspberry Pi"
+  <Module_Use Name="Raspberry Pi" Offset="0"
    Vendor="raspberrypi.org" Module="Raspberry Pi">
-    <Module_Use Name="RasPi"
+    <Module_Use Name="RasPi" Offset="0"
      Vendor="makerbus.com" Module="RasPi">
-      <Module_Use Name="LCD_Duino"
+      <Module_Use Name="LCD_Duino" Offset="0"
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="LCD"
+        <Module_Use Name="LCD" Offset="0"
          Vendor="sainsmart.com" Module="LCD1602" />
       </Module_Use>
-      <Module_Use Name="Grove_Duino"
+      <Module_Use Name="Grove_Duino" Offset="0"
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="Grove"
-         Vendor="seeedstudio.com" Module="Grove Base Shield" />
+        <Module_Use Name="Grove_Base_Shield" Offset="0"
+         Vendor="seeedstudio.com" Module="Grove Base Shield">
+          <Module_Use Name="purple_led" Offset="7"
+           Vendor="seeedstudio.com" Module="Grove 3mm Purple LED" />
+          <Module_Use Name="blue_led" Offset="11"
+           Vendor="seeedstudio.com" Module="Grove 5mm Blue LED" />
+          <Module_Use Name="buzzer" Offset="3"
+           Vendor="seeedstudio.com" Module="Grove Buzzer" />
+          <Module_Use Name="Grove OLED 96x96" Offset="0"
+           Vendor="seeedstudio.com" Module="Grove OLED 96x96" />
+          <Module_Use Name="button" Offset="21"
+           Vendor="seeedstudio.com" Module="Grove Panel Button" />
+          <Module_Use Name="clock" Offset="0"
+           Vendor="seeedstudio.com" Module="Grove Real Time Clock" />
+          <Module_Use Name="Grove Serial LCD" Offset="0"
+           Vendor="seeedstudio.com" Module="Grove Serial LCD" />
+          <Module_Use Name="slide_pot" Offset="15"
+           Vendor="seeedstudio.com" Module="Grove Slide Potentiometer" />
+          <Module_Use Name="joystick" Offset="0"
+           Vendor="seeedstudio.com" Module="Grove Thumb Joystick" />
+        </Module_Use>
       </Module_Use>
-      <Module_Use Name="TinkerKit_Duino"
+      <Module_Use Name="TinkerKit_Duino" Offset="0"
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="Sensor Shield"
+        <Module_Use Name="Sensor Shield" Offset="0"
          Vendor="arduino.cc" Module="Sensor Shield" />
       </Module_Use>
-      <Module_Use Name="DemPer_Duino"
+      <Module_Use Name="DemPer_Duino" Offset="0"
        Vendor="makerbus.com" Module="MBDuino" />
     </Module_Use>
   </Module_Use>

@@ -1,0 +1,42 @@
+<Module Name="Grove Slide Potentiometer" Vendor="seeedstudio.com"
+ Brief="Grove Slide Potentiometer">
+  <Overview>
+    This slide potentiometer is a linear variable resistor with a
+    total resistance of 10k.  When you move the lever from one side
+    to the other, its output voltage will range between 0 V to the
+    VCC you apply.  Three of four Grove pins are connected to VCC,
+    GND and the ADC IN on the slide, while the remaining pin is
+    connected to a green indicator LED.  You can use the indicator
+    LED to visually display the change on the potentiometer. 
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Register Name="duty_cycle" Type="UByte" Number="0"
+   Brief="LED duty cycle">
+    <Description>
+	This register specifes the on duty cycle as a percentage
+	value between 0 and 100.  0 means totally off and 100
+	means totally on.
+    </Description>
+  </Register>
+  <Register Name="frequency" Type="UShort" Number="2"
+   Brief="LED refresh frequency">
+    <Description>
+	This register specifes the refresh frequency in Hertz
+	(cycles per second) as a value between 1 and 1000.
+	A frequency value of 0 means the LED is off.  A value
+	of 1 means the LED is cycled at 1 Hertz.  A value of
+	1000 means the LED is cycled at 1000 Hertz.
+    </Description>
+  </Register>
+  <Function Name="value get" Type="UShort" Number="5"
+   Brief="Return Potentiometer Value">
+    <Result Name="value" Type="UShort"
+     Brief="Returned potentiometer value"/>
+    <Description>
+	This function returns the current potentiometer values
+	as a number between 0 and 1023.
+    </Description>
+   </Function>
+</Module>

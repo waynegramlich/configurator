@@ -1,7 +1,7 @@
-<Module Name="MBDuino" Vendor="makerbus.com"
+<Module Name="MBDuino" Vendor="makerbus.com" Generate="1"
  Brief="Bridge between MakeBus and Arduino(tm) Shield">
   <Overview>
-    The Grove Base Shild is an Arduino(tm) compatible shield
+    The Grove Base Shield is an Arduino(tm) compatible shield
     that has 22 Grove connectors on it.  7 of the connectors
     are connected to the A0-A5 shield pins.  13 of the
     connectors are connected to pins D2-D13.  1 connector is

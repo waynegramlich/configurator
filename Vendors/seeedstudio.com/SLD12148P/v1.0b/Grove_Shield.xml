@@ -1,0 +1,24 @@
+<Module Name="Grove Base Shield" Vendor="seeedstudio.com"
+ Brief="22 port Grove Base Shield">
+  <Overview>
+    This is the new version of Electronic Brick Shield.  We standardize
+    all the connectors into 4 pins (Signal 1, Signal 2, VCC and GND) 2mm
+    connectors, which simplify the wiring of electronics projects.
+    The 4 pin buckled connectors also make the wiring situation more
+    stable.  We build all kinds of Twigs to match up with Stem, so
+    you do not need to worry about the compatibleness between the stem
+    and your existing Electronic Bricks.  We have many kinds of converter
+    cables (still increasing) to deal with the compatibleness.  This is
+    very similar in fashion to an Arduino shield board, and in fact is
+    used as such with our Seeeduino or Mega board.  In v1.0b, we move
+    in the analog connectors a little so that it will fit the higher
+    power connector and USB connector.
+
+    Base Shield is compatible with Seeeduino or Arduino UNO and Duemilanove.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Buses" Level2="Shield" />
+  <Classification Level1="Catagories" Level2="Bridges"
+   Level3="Shield" Level4="Shield=>Grove" />
+</Module>

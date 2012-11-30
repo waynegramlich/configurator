@@ -1,0 +1,20 @@
+<Module Name="Grove Panel Button" Vendor="seeedstudio.com"
+ Brief="Grove Panel Button">
+  <Overview>
+    This Grove Panel Button is a sister version of original Grove
+    Button. They are identical except the Grove connecter is moved
+    to the back so that you can easily use it as a neat and
+    wire-free human interface device.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Function Name="is_pressed" Number="0"
+   Brief="Return whether or not button is pressed">
+    <Result Name="button_value" Type="Logical" Brief="Returned button value"/>
+    <Description>
+      This function will return *True* if the button is pressed and
+      *False* otherwise.
+    </Description>
+  </Function>
+</Module>

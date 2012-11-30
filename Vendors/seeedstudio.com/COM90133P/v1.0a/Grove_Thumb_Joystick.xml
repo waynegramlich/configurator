@@ -1,0 +1,46 @@
+<Module Name="Grove Thumb Joystick" Vendor="seeedstudio.com"
+ Brief="Grove Thumb Joystick">
+  <Overview>
+    The Grove Thumb Joystick is a Grove compatible module which
+    is very similar to the 'analog' joystick on PS2 (PlayStation 2)
+    controller.  Two direction movements will output different
+    analog signals as they are actually two potentiometers.
+    The resistor is ~10k for each.  The joystick also has a push
+    button that is could be used for special applications.  When
+    the module is in working mode it will output two analog values
+    representing two directions. The value is restricted in a little
+    smaller range (e.g 200~700)compared to the normal joystick,
+    while it is around 1023 when the button is pushed, so that
+    the MCU can detect the action of pressing.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Function Name="left_right_get" Number="0"
+   Brief="Return the Left/Right Thumbstick value">
+    <Result Name="left_right_value" Type="UShort"
+     Brief="Returned left/right value"/>
+    <Description>
+	This function will return the left/right value as a number
+	between approximately 200 to 700.
+    </Description>
+  </Function>
+  <Function Name="up_down_get" Number="1"
+   Brief="Return the Left/Right Thumbstick value">
+    <Result Name="up_down_value" Type="UShort"
+     Brief="Returned up/down value"/>
+    <Description>
+	This function will return the up/down value as a number
+	between approximately 200 to 700.
+    </Description>
+  </Function>
+  <Function Name="is_pressed" Number="2"
+   Brief="Return *True* if thumbstick is depressed">
+    <Result Name="depressed_value" Type="Logical"
+     Brief="Returned depressed value"/>
+    <Description>
+	This function will *True* if the thumbstick is depressed;
+	and *False* otherwise.
+    </Description>
+  </Function>
+</Module>

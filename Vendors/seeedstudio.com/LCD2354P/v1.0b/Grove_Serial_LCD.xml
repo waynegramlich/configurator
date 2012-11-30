@@ -1,0 +1,17 @@
+<Module Name="Grove Serial LCD" Vendor="seeedstudio.com"
+ Brief="16 x 2 LCD Display">
+  <Overview>
+    The Serial LCD Driver twig is an UART based LCD1602 display
+    (Hitachi HD44780 or a compatible LCD).  It can control LCD1602
+    only with two I/O port pins (UART Tx and Rx).  The VCC and GND
+    are the only additional pins required for operation.  Conventional
+    LCD drivers use 7-11 I/O port pins, whereas Serial LCD twig saves
+    all these additional I/O pins.  Serial LCD twig uses AT89S52 for
+    implementing the UART Driving logic.  Now has been updated to v1.0b.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Buses" Level2="Shield" />
+  <Classification Level1="Catagories" Level2="Bridges"
+   Level3="Shield" Level4="Shield=>Grove" />
+</Module>

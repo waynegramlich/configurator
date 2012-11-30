@@ -1,9 +1,0 @@
-<Module Name="Grove Real Time Clock" Vendor="seeedstudio.com"
- Sub_Class="LCDKeypad" Brief="Real Time Clock Twig">
-  <Overview>
-	stuff goes here
-  </Overview>
-  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
-  <Classification Level1="Buses" Level2="Grove" />
-  <Classification Level1="Catagories" Level2="Time" />
-</Module>

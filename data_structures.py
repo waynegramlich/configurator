@@ -135,7 +135,7 @@ class Node:
     ## @brief Method writes *self* to *out_stream* indented by *indent*.
     #  @param self *Node* object to write out.
     #  @param indent *int* that specifies how much to indent by.
-    #  @param out_stream *File* that specifies an output stream to write to.
+    #  @param out_stream *file* that specifies an output stream to write to.
     #
     # This method will write *self* in XML format to *out_stream* indented by
     # *indent*.  This method should be overridden to provide the correct
@@ -145,7 +145,7 @@ class Node:
 
 	# Check argument types:
 	assert isinstance(indent, int)
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	print self
 	assert False, "No write method for {0} Node". format(str(type(self)))
@@ -425,7 +425,7 @@ class Function(Node):
     ## @brief Write the C++ method declaration for *self* to *out_stream*.
     #  @param self *Function* object to use for information
     #  @param module *Module* (Currently unused)
-    #  @param out_stream *File* output stream to output to
+    #  @param out_stream *file* output stream to output to
     #
     # This routine will output a chunk of C++ code to *out_stream*
     # that corresponds to method declaration in C++ class definition:
@@ -447,7 +447,7 @@ class Function(Node):
 
 	# Check argument types:
 	assert isinstance(module, Module)
-	assert isinstance(File, out_stream)
+	assert isinstance(out_stream, file)
 
 	# Output: "// BRIEF"
 	style = self.style
@@ -459,7 +459,7 @@ class Function(Node):
     ## @brief Write local C++ RPC code for *self* to *out_stream*.
     #  @param self *Function* to use for parameters and return results
     #  @param module *Module* to use for module name and the like.
-    #  @param out_stream *File* to write everything out to.
+    #  @param out_stream *file* to write everything out to.
     #
     # This method will output the local remote procedure call C++ code
     # for *function out to *out_stream*.  The code looks basically
@@ -489,7 +489,7 @@ class Function(Node):
 
 	# Check argument types:
 	assert isinstance(module, Module)
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	# Grab some values from *self*:
 	style = self.style
@@ -504,7 +504,8 @@ class Function(Node):
 	#   "RT1 MODULE::FUNC(PT1 PN1,...,PTn PNn, RT2 *RN2,...,RTn *RNn) {"
 
 	# Compute the signature with {class_name}:: prepended to function name:
-	format_string = "{0:S" + module.name + "::}{1:b}"
+	module_type_name = "{0:t}".format(module)
+	format_string = "{0:S" + module_type_name + "::}{1:b}"
 	#print "format_string='{0}'".format(format_string)
 	out_stream.write(format_string.format(self, style))
 
@@ -528,8 +529,9 @@ class Function(Node):
 
     ## @brief Write C++ code for RPC request handing for *self* to *out_stream*
     #  @param self *Function* to process
+    #  @param offset *int* offset to use for function
     #  @param module_name *str* Module name to use
-    #  @param out_stream *File* to write output to
+    #  @param out_stream *file* to write output to
     #
     # This method will output *self* to *out_stream* as a **case** clause
     # as part of a **switch** statement.  The basic format of the code
@@ -562,11 +564,12 @@ class Function(Node):
     #  * RNi is the i'th Result Name
     #  * RTi is the i'th Result Type
 
-    def cpp_slave_write(self, module_name, out_stream):
+    def ino_slave_write(self, offset, variable_name, out_stream):
 
 	# Check argument types:
-	assert isinstance(module_name, str)
-	assert isinstance(out_stream, File)
+	assert isinstance(offset, int)
+	assert isinstance(variable_name, str)
+	assert isinstance(out_stream, file)
 
 	# Grab some values out of *self*:
 	brief = self.brief
@@ -578,7 +581,7 @@ class Function(Node):
 	style = self.style
 
 	# Output: "case NUMBER: {"
-	out_stream.write("{0:i}case {1}:{0:b}".format(style, number))
+	out_stream.write("{0:i}case {1}:{0:b}".format(style, offset + number))
 
 	# Output: "// FUNCTION_NAME: BRIEF"
 	out_stream.write("{0:i}// {1:r}: {2}\n".format(style, self, brief))
@@ -604,7 +607,7 @@ class Function(Node):
 	    out_stream.write("{0:n} = ".format(results[0]))
 
 	# Output: "FUNCTION_NAME(":
-	out_stream.write("{0}.{1:r}(".format(module_name.lower(), self))
+	out_stream.write("{0}.{1:r}(".format(variable_name.lower(), self))
 
 	# Output: "PN1,...PNn" (if available):
 	prefix = ""
@@ -640,7 +643,7 @@ class Function(Node):
     ## @brief Write remote side RPC code for *self* to *out_stream*.
     #  @param self *Function* to output RPC code for
     #  @param module *Module* to use for module name
-    #  @param out_stream *File* to output code to
+    #  @param out_stream *file* to output code to
     #
     # The routine will look something like:
     #
@@ -672,7 +675,7 @@ class Function(Node):
 
 	# Check argument types:
 	assert isinstance(module, Module)
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	# Grab some values from *self*:
 	style = self.style
@@ -729,7 +732,7 @@ class Function(Node):
 
     ## @brief Output Python RPC code for *self* to *out_stream*
     #  @param self *Function* to output Python code for
-    #  @param out_stream *File* to output Python code to
+    #  @param out_stream *file* to output Python code to
     #
     # This routine will output remote procedure call code for *self*
     # to *out_stream*.  The code looks as follows:
@@ -758,7 +761,7 @@ class Function(Node):
     def python_write(self, out_stream):
 
 	# Check argument types:
-	assert isinstance(outstream, File)
+	assert isinstance(outstream, file)
 
 	# Grab some values from *self*:
 	brief = self.brief
@@ -834,12 +837,13 @@ class Module(Node):
     ## @brief Module constructor
     #  @param self *Module* to initialize
     #  @param module_element *ET.Element* to initialize from
+    #  @param path *str* file path to .xml file read in
     #  @param style *Style* object that specifies how to format generate code.
     # 
     # This method will initialize the contents of *self* by read the
     # associated XML infromation from *module_element.
 
-    def __init__(self, module_element, style):
+    def __init__(self, module_element, path, style):
 
 	# Check arugment types:
 	assert isinstance(module_element, ET.Element) and \
@@ -874,6 +878,9 @@ class Module(Node):
 	sub_class = None
 	if "Sub_Class" in attributes:
 	    sub_class = attributes["Sub_Class"]
+	generate = False
+	if "Generate" in attributes:
+	    generate = attributes["Generate"] != 0
 
 	# Fill in the contents of *self*:
 	self.classifications = classifications
@@ -881,9 +888,11 @@ class Module(Node):
 	self.fence_begin = "  //////// Edit begins here:"
 	self.fence_end = "  //////// Edit ends here:"
 	self.functions = functions
+	self.generate = generate
 	self.registers = registers
 	self.fences = {}
 	self.overview = overview
+	self.path = path
 	self.style = style
 	self.sub_class = sub_class
 	self.vendor = vendor
@@ -911,6 +920,7 @@ class Module(Node):
     # control the formatting.  *fmt* must be one of:
     #
     #  * 'n' returns the module name.
+    #  * 't' returns the module as a C/C++ type name
 
     def __format__(self, fmt):
 
@@ -920,13 +930,15 @@ class Module(Node):
 	# Dispatch on *fmt*:
 	if fmt == 'n':
 	    result = self.name
+	elif fmt == 't':
+	    result = self.name.replace(" ", "_")
 	else:
 	    result = "@Module:{0}@".format(fmt)
 	return result
 
     ## @brief Write C++ header file for *self* out to *file_name*.
     #  @param self *Module* to generate C++ for
-    #  @param file_name *str* File name to open and write C++ into
+    #  @param file_name *str* file name to open and write C++ into
     #  @param with_fences *bool* if *True*, causes fences to be written as well
     #
     # This method will write out a C++ header file that contains declarations
@@ -975,7 +987,7 @@ class Module(Node):
 	    out_stream.write("\n")
 
 	# Start the class declaration:
-	out_stream.write("class {0:n} : public Maker_Bus_Module".format(self))
+	out_stream.write("class {0:t} : public Maker_Bus_Module".format(self))
 	sub_class = self.sub_class
 	if sub_class != None and with_fences:
 	    out_stream.write(", public {0} ".format(sub_class))
@@ -987,7 +999,7 @@ class Module(Node):
 
 	# Generate the constructor signature for the class:
 	out_stream.write("{0:i}// Constructor\n".format(style))
-	out_stream.write("{0:i}{1:n}();\n\n".format(style, self))
+	out_stream.write("{0:i}{1:t}();\n\n".format(style, self))
 
 	# Generate method declarations for each *register*:
 	for register in self.registers:
@@ -1013,7 +1025,7 @@ class Module(Node):
 
     ## @brief Write a local C++ header file for *self* to *file_name*
     #  @param self *Module* to write C++ header for
-    #  @param file_name *str* File name to open and write C++ into
+    #  @param file_name *str* file name to open and write C++ into
     #
     # This method will write a local C++ header file for *self* into the
     # file name *file_name*.  If *file_name* does  not exist, it will be
@@ -1051,7 +1063,7 @@ class Module(Node):
 
 	# Output include files:
 	out_stream.write("// Generated file: only edit in designated areas!\n")
-	out_stream.write("#include <{0}_Local.h>\n".format(self.name))
+	out_stream.write("#include <{0:t}_Local.h>\n".format(self))
 
 	#FIXME: This #include should not be hard wired in!!!
 	out_stream.write("#include <MB7.h>\n")
@@ -1064,8 +1076,8 @@ class Module(Node):
 
 	# Output the constructor with a fence in the middle:
 	out_stream.write("// Constructor\n")
-	out_stream.write("{0}::{0}(){1:b}".format(name, style))
-	self.fence_write(name.upper() + "_CONSTRUCTOR", out_stream)
+	out_stream.write("{0:t}::{0:t}(){1:b}".format(self, style))
+	self.fence_write("CONSTRUCTOR", out_stream)
 	out_stream.write("{0:e}\n".format(style))
 
 	# Output the register access methods:
@@ -1122,7 +1134,7 @@ class Module(Node):
 
 	# Output the constructor with a fence in the middle:
 	out_stream.write("// {0} Constructor\n".format(name))
-	out_stream.write("{0}::{0}(){1:b}".format(name, style))
+	out_stream.write("{0:t}::{0}(){1:b}".format(self, style))
 	out_stream.write("{0:e}\n".format(style))
 
 	# Output the register access methods:
@@ -1138,17 +1150,23 @@ class Module(Node):
 
     ## @brief Write "slave" C++ to support RPC's for *self* out to *file_name*.
     #  @param self *Module* for write C++ code for
-    #  @param file_name *str* Name of file to write C++ code to
+    #  @param offset *int* offset where to start case statements
+    #  @param out_stream *file* File to output case statements to
+    #  @result *int* Offset for next batch of case statemetns
     #
-    # This method will write out a C++ framework to support remote procedure
-    # calls for *self*.  This frame work will have places where user supplied
-    # code is provided (called a fence.)  The code is written out to
-    # *file_name*.
+    # This method will write out a C++ the case statements needed to
+    # for all the registers and functions of *self*.  
 
-    def cpp_slave_write(self, file_name):
+    def ino_slave_write(self, offset, variable_name, out_stream):
+
+	original_offset = offset
+	print "=>Module.ino_slave_write({0}, {1}, *)". \
+	  format(offset, variable_name)
 
 	# Check argument types:
-	assert isinstance(file_name, str)
+	assert isinstance(offset, int)
+	assert isinstance(variable_name, str)
+	assert isinstance(out_stream, file)
 
 	# Grab some values from *self*:
 	functions = self.functions
@@ -1156,55 +1174,25 @@ class Module(Node):
 	registers = self.registers
 	style = self.style
 
-	# Open *file_name* for writing:
-	out_stream = open(file_name, "w")
-
-	#Kludge #includes:
-	out_stream.write("#include <LiquidCrystal.h>\n")
-	out_stream.write("#include <LCDKeypad.h>\n")
-
-	# Output #includes:
-	out_stream.write("#include \"MB7.h\"\n")
-	out_stream.write("#include \"{0}_Local.h\"\n".format(self.name))
-	out_stream.write("\n")
-
-	# Output the object variable:
-	out_stream.write("{0} {1};\n".format(self.name, self.name.lower()))
-	out_stream.write("Maker_Bus maker_bus;\n")
-	out_stream.write("\n")
-
-	# Output command_process() declatration:
-	out_stream.write("UByte command_process(const Maker_Bus *maker_bus,\n")
-	out_stream.write(" UByte command, Logical execute_mode);\n")
-	out_stream.write("\n")
-
-	# Output the setup() routine:
-	out_stream.write("void setup(){0:b}".format(style))
-	out_stream.write("{0:e}\n\n".format(style))
-
-	# Output the loop() routine:
-	out_stream.write("void loop(){0:b}".format(style))
-	out_stream.write("{0:i}{1}.slave_mode(0x92, command_process);\n". \
-	  format(style, self.name.lower()))
-	out_stream.write("{0:e}\n\n".format(style))
-
-	# Output the command processor routine:
-	out_stream.write("UByte command_process(Maker_Bus *maker_bus, " + \
-	  "UByte command, Logical execute_mode){0:b}".format(style))
-	out_stream.write("{0:i}switch (command){0:b}".format(style))
-
 	# Iterate over all *registers*:
+	last_number = -1
 	for register in registers:
-	    register.cpp_slave_write(name, out_stream)
+	    register.ino_slave_write(offset, variable_name, out_stream)
+	    if register.number > last_number:
+		last_number = register.number + 1
 
 	# Iterate over all *functions*:
 	for function in functions:
-	    function.cpp_slave_write(name, out_stream)
+	    function.ino_slave_write(offset, variable_name, out_stream)
+	    if function.number > last_number:
+		last_number = function.number
 
-	# Close off the command proccessor routine:
-	out_stream.write("{0:e}".format(style))
-	out_stream.write("{0:i}return 0;\n".format(style))
-	out_stream.write("{0:e}".format(style))
+	offset += last_number + 1
+
+	print "<=Module.ino_slave_write({0}, {1}, *)=>{2}". \
+	  format(original_offset, variable_name, offset)
+
+	return offset
 
     ## @brief Read in the fenced code for *file_name* into a table of *self*
     #  @param self *Module* that contains the fences table
@@ -1226,7 +1214,7 @@ class Module(Node):
     def fences_read(self, file_name):
 
 	# Check argument types:
-	assert isinstance(self, file_name)
+	assert isinstance(file_name, str)
 
 	# Grab some values from *self*:
         fences = {}
@@ -1282,7 +1270,7 @@ class Module(Node):
     ## @brief Write fenced code for *fence_name* from *self* to *out_stream*
     #  @param self *Module* object that contains fenced code table
     #  @param fence_name *str* Name of fence to write out
-    #  @param out_stream *File* file output stream that is open for writing
+    #  @param out_stream *file* file output stream that is open for writing
     #
     # A this method will write out the fenced code for *fence_name* out
     # to *out_stream* using the fences table in *self*.  A fence is
@@ -1301,7 +1289,7 @@ class Module(Node):
 
 	# Check argument types:
 	assert isinstance(fence_name, str)
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	# Output: "//////// Edit begins here: {FENCE_NAME}"
 	out_stream.write("{0} {1}\n".format(self.fence_begin, fence_name))
@@ -1313,6 +1301,42 @@ class Module(Node):
 
 	# Output "//////// Edit ends here: {FENCE_NAME}"
 	out_stream.write("{0} {1}\n".format(self.fence_end, fence_name))
+
+    ## @brief Collect the information needed for sketch generation.
+    #  @param self *Module* to collect infromation from
+    #  @param module_use *Module_Use* that referenced *self*
+    #  @param sketch_generator *Sketch_Generator* to collect information into
+    #  @param ident *int* amount to indent debug trace information by
+    # 
+    # This routine will collect the information needed to generate the
+    # Arduino(tm) sketch code need for *self* using *sketch_generator*
+    # to collect the sketch information into.  *indent* is used for
+    # debugging to specify amount to indent tracing messages by.
+
+    def sketch_generate(self, module_use, sketch_generator, indent):
+
+        # Check argument types:
+	assert isinstance(sketch_generator, Sketch_Generator)
+	assert isinstance(indent, int)
+
+	name = self.name
+	vendor = self.vendor
+	#print "{0}=>Module.sketch_generator({1}, {2})". \
+	#  format(" " * indent, vendor, name)
+
+	functions = self.functions
+	registers = self.registers
+	if len(functions) != 0 or len(registers) != 0:
+	    # We need this module:
+	    key = (vendor, name)
+	    unique_modules = sketch_generator.unique_modules
+	    if key in unique_modules:
+		unique_modules[key].append(module_use)
+	    else:
+		unique_modules[key] = [ module_use ]
+
+	#print "{0}<=Module.sketch_generator({1}, {2})". \
+	#  format(" " * indent, vendor, name)
 
     ## @brief Write out Python RPC access code for *self* to *file_name*
     #  @param self *Module* to write Python code for
@@ -1427,6 +1451,7 @@ class Module_Use(Node):
 	# Make sure that *module_uses* is a list:
 	if module_uses == None:
 	    module_uses = []
+	offset = 0
 
 	# Initialize from *module_use_element* if it is not *None*:
 	if module_use_element != None:
@@ -1435,6 +1460,8 @@ class Module_Use(Node):
 	    name = attributes["Name"]
 	    vendor = attributes["Vendor"]
 	    module_name = attributes["Module"]
+	    if "Offset" in attributes:
+		offset = int(attributes["Offset"])
 
 	    # Extract all of the sub Module_Use's:
 	    for sub_module_use_element in \
@@ -1453,15 +1480,93 @@ class Module_Use(Node):
 	    assert False
 
 	# Load up *self*:
-	self.name = name
-	self.vendor = vendor
+	self.offset = offset
 	self.module_name = module_name
 	self.module_uses = module_uses
+	self.name = name
 	self.style = style
+	self.vendor = vendor
 
 	# Initialize *Node* base class:
 	tree_text = "{0}".format(name, vendor, module_name)
 	Node.__init__(self, "Module_Use", tree_text, None, module_uses, style)
+
+    ## @brief Generate sketch code for *self* to *out_stream*.
+    #  @param self *self* *Module_Use* to generate code for
+    #  @param offset *int* Base offset for case statement
+    #  @param module *Module* associated with *self*
+    #  @param out_stream *file* to output to
+    #  @result *offset* that has been updated
+    #
+    # This method will output the case statements needed for the
+    # Arduino(tm) slave module for *self* out to *out_stream*.
+
+    def ino_slave_write(self, offset, module, out_stream):
+
+	original_offset = offset
+	print "=>Module_use.ino_slave_write({0}, {1}, {2}, *)". \
+	  format(self.name, offset, module.name)
+
+	# Check argument types:
+	assert isinstance(offset, int)
+	assert isinstance(module, Module)
+	assert isinstance(out_stream, file)
+
+	style = module.style
+	out_stream.write("{0:i}// {1}\n".format(style, self.name))
+        
+	offset = module.ino_slave_write(offset, self.name, out_stream)
+
+	out_stream.write("\n")
+
+	print "<=Module_use.ino_slave_write({0}, {1}, {2}, *) => {3}". \
+	  format(self.name, original_offset, module.name, offset)
+
+	return offset
+
+    ## @brief Generate a sketch for *self* using *sketch_generator*
+    #  @param self *Module_Use* 
+    #  @param sketch_generator *Sketch_Generator* used to collect information
+    #  @param indent *int* The amount to indent by for debugging
+    #
+    # This method will generate an Arduino(tm) sketch for *self* using
+    # *sketch_generator* to collect all the information needed for the
+    # sketch.  *indent* is used for debugging only and specifies the
+    # amount to indent trace information by.
+
+    def sketch_generate(self, sketch_generator, indent):
+
+	#print "{0}=>Module_Use.sketch_generate()".format(" " * indent)
+
+	# Check arguement types:
+	assert isinstance(sketch_generator, Sketch_Generator)
+
+	modules_table = sketch_generator.modules_table
+	module = self.module_lookup(modules_table)
+	module.sketch_generate(self, sketch_generator, indent + 1)
+
+	for sub_module_use in self.module_uses:
+	    sub_module_use.sketch_generate(sketch_generator, indent + 1)
+
+	#print "{0}<=Module_Use.sketch_generate()".format(" " * indent)
+
+    ## @brief Look up *Module* associated with *self* from *modules_table*
+    #  @param self *Module_Use* to use
+    #  @param modules_table *dict* Modules table keyed by (vendor, module_name)
+    #  @result *Module* that corresponds
+
+    def module_lookup(self, modules_table):
+
+	# Check argument types:
+	assert isinstance(modules_table, dict)
+	
+	# Perform the lookup:
+	module = None
+	key = (self.vendor, self.module_name)
+	if key in modules_table:
+	    module = modules_table[key]
+            assert isinstance(module, Module)
+	return module
 
     ## @brief Insert *new_node* into the module uses list for *self* at *index*
     #  @param self *Module_Use* to modify
@@ -1498,7 +1603,7 @@ class Module_Use(Node):
     ## @brief Write XML of *self* to *out_stream* indented by *indent*.
     #  @param self *Module_Use* to write out
     #  @param indent *int* The amount to indent it by
-    #  @param out_stream *File* to write the XML out to
+    #  @param out_stream *file* to write the XML out to
     #
     # This method will write *self* in XML format to *out_stream* indented
     # by *indent*.
@@ -1507,11 +1612,12 @@ class Module_Use(Node):
 	
 	# Check argument types:
 	assert isinstance(indent, int)
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	# Output the opening <Module_Use...>:
 	out_stream.write("{0}<Module_Use".format("  " * indent))
-	out_stream.write(' Name="{0}"\n'.format(self.name))
+	out_stream.write(' Name="{0}"'.format(self.name))
+	out_stream.write(' Offset="{0}"\n'.format(self.offset))
 	out_stream.write('{0} Vendor="{1}"'.format("  " * indent, self.vendor))
 	out_stream.write(' Module="{0}"'.format(self.module_name))
 
@@ -1531,6 +1637,195 @@ class Module_Use(Node):
 
 	    # Output the closing </Module_Use>:
 	    out_stream.write("{0}</Module_Use>\n".format("  " * indent))
+
+## @class Sketch_Generator
+#
+# Helper class for sketch generation.
+#
+# This class keeps track of the information needed to generate an Arduino(tm)
+# sketch.
+
+class Sketch_Generator:
+
+    ## @brief Sketch_Generate constructor
+    #  @param self *Sketch_Generator* to initialize
+    #  @param name *str* Name of module being generated
+    #  @param modules_table *dict* Modules table keyed by (vendor, module_name)
+    #  @param style *Style* object to control generated code formatting.
+    #
+    # This method will initialize *self* with both *name* and *modules_table*
+    # looked up from *module_uses* or extract the information from
+    # *module_use_element*
+
+    def __init__(self, name, modules_table, style):
+
+	# Check argument types:
+	assert isinstance(name, str)
+
+	# Load up *self*:
+	self.name = name
+	self.modules_table = modules_table
+	self.style = style
+	self.unique_modules = {}
+
+    #  @result *bool* *True* if any *Module_Use* offset is changed.
+
+    def write(self):
+	modules_table = self.modules_table
+	unique_modules = self.unique_modules
+
+	for module_key in unique_modules:
+	    #print "module_key=", module_key
+	    module = modules_table[module_key]
+	    name = module.name
+            vendor = module.vendor
+
+	    path = module.path
+	    #print "path={0}".format(path)
+	    directory = os.path.dirname(path)
+	    #print "directory={0}".format(directory)
+	    libraries_directory = os.path.join(directory, "libraries")
+	    if not os.path.isdir(libraries_directory):
+		# Create *libraries_directory*:
+		os.makedirs(libraries_directory)
+		
+	    local_library_directory = \
+	      os.path.join(libraries_directory, "{0:t}_Local".format(module))
+	    #print "local_library_directory={0}".format(local_library_directory)
+            if not os.path.isdir(local_library_directory):
+		# Create *local_library_directory*:
+		os.makedirs(local_library_directory)
+
+	    remote_library_directory = \
+	      os.path.join(libraries_directory, "{0:t}_Remote".format(module))
+	    #print "remote_library_directory={0}". \
+	    #  format(remote_library_directory)
+	    if not os.path.isdir(remote_library_directory):
+		# Create *remote_library_directory*:
+		os.makedirs(remote_library_directory)
+
+	    sketchbook_libraries_directory = \
+	      os.path.join("sketchbook", "libraries")
+	    if not os.path.isdir(sketchbook_libraries_directory):
+		# Create *sketchbook_libraries_directory*:
+		os.makedirs(sketchbook_libraries_directory)
+
+	    sketchbook_local_library_directory = \
+	      os.path.join(sketchbook_libraries_directory,
+	      "{0:t}_Local".format(module))
+	    #FIXME: Relative stuff is hardwired!!!:
+	    sketchbook_relative_local_library_directory = \
+	      os.path.join("..", "..", "..",
+	      "configurator", local_library_directory)
+	    #print "srlld:{0}\nslld:{1}". \
+	    #  format(sketchbook_relative_local_library_directory,
+	    #  sketchbook_local_library_directory)
+	    if os.path.exists(sketchbook_local_library_directory):
+	    	os.remove(sketchbook_local_library_directory);
+	    os.symlink(sketchbook_relative_local_library_directory,
+	      sketchbook_local_library_directory)
+
+	    local_header_file = os.path.join(local_library_directory,
+	      "{0:t}_Local.h".format(module))
+	    module.cpp_header_write(local_header_file, True)
+
+	    local_cpp_file = os.path.join(local_library_directory,
+	      "{0:t}_Local.cpp".format(module))
+	    module.cpp_local_source_write(local_cpp_file)
+
+	slave_directory = \
+	  os.path.join("sketchbook", "{0}_Slave".format(self.name))
+	#print "slave_directory={0}".format(slave_directory)
+	if not os.path.exists(slave_directory):
+	    os.makedirs(slave_directory)
+
+	slave_ino_source = \
+	  os.path.join(slave_directory, "{0}_Slave.ino".format(self.name))
+
+	# Set *debug* to *True* to force debugging code to be generated:
+	debug = True
+	    
+	#print "slave_ino_source={0}".format(slave_ino_source)
+	out_stream = open(slave_ino_source, "w")
+
+	# Output the #includes:
+	out_stream.write("// #includes:\n")
+	out_stream.write("#include \"MB7.h\"\n")
+	for module_key in unique_modules:
+	    #print "module_key=", module_key
+	    module = modules_table[module_key]
+	    out_stream.write("#include <{0:t}_Local.h>\n".format(module))
+	out_stream.write("\n")
+
+	# Output one object variable per *module_use*:
+	out_stream.write("// Object variables:\n")
+	out_stream.write("Maker_Bus maker_bus;\n")
+	for module_key in unique_modules:
+	    #print "module_key=", module_key
+	    module = modules_table[module_key]
+
+	    module_uses = unique_modules[module_key]
+            for module_use in module_uses:
+		out_stream.write("{0:t} {1};\n".format(module, module_use.name))
+	out_stream.write("\n")
+
+	# Output command_process() declaration:
+	out_stream.write("// Forward declaration of command_process():\n")
+	out_stream.write("UByte command_process(const Maker_Bus *maker_bus,\n")
+	out_stream.write(" UByte command, Logical execute_mode);\n")
+	out_stream.write("\n")
+
+	# Output the setup() routine:
+	style = self.style
+	out_stream.write("void setup(){0:b}".format(style))
+
+	if debug:
+	    out_stream.write("{0:i}Serial.begin(9600);\n".format(style))
+	    out_stream.write('{0:i}Serial.print("\\n{1}:\\n");'. \
+	      format(style, self.name))
+
+	out_stream.write("{0:e}\n\n".format(style))
+
+	# Output the loop() routine:
+	out_stream.write("void loop(){0:b}".format(style))
+	out_stream.write( \
+	  "{0:i}maker_bus.slave_mode(0x92, command_process);\n".format(style))
+	out_stream.write("{0:e}\n\n".format(style))
+
+	# Output the command processor routine:
+	out_stream.write("UByte command_process(Maker_Bus *maker_bus, " + \
+	  "UByte command, Logical execute_mode){0:b}".format(style))
+	out_stream.write("{0:i}switch (command){0:b}".format(style))
+
+	# Output access code for each *module_use*:
+	modified = False
+	offset = 0
+	for module_key in unique_modules:
+	    #print "module_key=", module_key
+	    module = modules_table[module_key]
+
+	    module_uses = unique_modules[module_key]
+            for module_use in module_uses:
+		print "B:mod.name={0} mod.offset={1} offset={2} modified={3}". \
+		  format(module_use.name, module_use.offset, offset, modified)
+		if module_use.offset != offset:
+		    module_use.offset = offset
+		    modified = True		    
+		print "A:mod.name={0} mod.offset={1} offset={2} modified={3}". \
+		  format(module_use.name, module_use.offset, offset, modified)
+
+		offset = module_use.ino_slave_write(offset, module, out_stream)
+
+	# Close off the command proccessor routine:
+	out_stream.write("{0:e}".format(style))
+	out_stream.write("{0:i}return 0;\n".format(style))
+	out_stream.write("{0:e}".format(style))
+
+	# Close *out_stream*:
+	out_stream.close()
+
+	print "modified={0}".format(modified)
+	return modified
 
 ## @class Overview
 #
@@ -1726,7 +2021,7 @@ class Project(Node):
     ## @brief Write *self* out as XML to *out_stream* indented by *indent*
     #  @param self *Project* to write out as XML
     #  @param indent *int* The amount to indent the XML by
-    #  @param out_stream *File* to write XML out to
+    #  @param out_stream *file* to write XML out to
     #
     # This method will write *self* out as XML to *out_stream* indented
     # by *indent*.  Currently, *indent* must be 0.
@@ -1736,7 +2031,7 @@ class Project(Node):
         # Check argument types:
 	assert isinstance(indent, int)
 	assert indent == 0
-	assert isinstance(out_stream, File)
+	assert isinstance(out_stream, file)
 
 	# Output the <Project ... > tag:
 	out_stream.write('<Project Name="{0}">\n'.format(self.name))
@@ -1845,7 +2140,7 @@ class Register(Node):
 	out_stream.write("// {0}: {1}\n".format(get_name, self.brief))
 
 	# Output the method signature:
-	out_stream.write("{0:i}{1:t} {2:n}::{3}(){0:b}". \
+	out_stream.write("{0:i}{1:t} {2:t}::{3}(){0:b}". \
 	  format(style, self, module, get_name))
 
 	# Output the code fence:
@@ -1866,7 +2161,7 @@ class Register(Node):
 	out_stream.write("// {0}: {1}\n".format(set_name, self.brief))
 
 	# Output the method signature:
-	out_stream.write("{0:i}void {1:n}::{2}({3:t} {3:n}){0:b}". \
+	out_stream.write("{0:i}void {1:t}::{2}({3:t} {3:n}){0:b}". \
 	  format(style, module, set_name, self))
 
 	# Output the fence:
@@ -1900,7 +2195,7 @@ class Register(Node):
 	out_stream.write("// {0}: {1}\n".format(get_name, self.brief))
 
 	# Output the method signature:
-	out_stream.write("{0:i}{1:t} {2:n}::{3}(){0:b}". \
+	out_stream.write("{0:i}{1:t} {2:t}::{3}(){0:b}". \
 	  format(style, self, module, get_name))
 
 	#	    Maker_Bus_Module::command_begin(NUMBER);
@@ -1934,7 +2229,7 @@ class Register(Node):
 	out_stream.write("// {0}: {1}\n".format(set_name, self.brief))
 
 	# Output: "void REGISTER_SET(TYPE NAME) {"
-	out_stream.write("{0:i}void {1:n}::{2}({3:t} {3:n}){0:b}". \
+	out_stream.write("{0:i}void {1:t}::{2}({3:t} {3:n}){0:b}". \
 	  format(style, module, set_name, self))
 
 	# Output: Maker_Bus_Module::command_begin(NUMBER + 1);
@@ -1952,10 +2247,14 @@ class Register(Node):
 	# Output the closing brace:
 	out_stream.write("{0:e}\n".format(style))
 
-    def cpp_slave_write(self, module_name, stream):
+    def ino_slave_write(self, offset, module_name, stream):
 	""" Register: Write C++ code for *self* to *stream* where
 	    the code is a case clause of a switch statement that
 	    processes a remote procedure call. """
+
+	assert isinstance(offset, int)
+	assert isinstance(module_name, str)
+	assert isinstance(stream, file)
 
 	# Grab some values out of *self*:
 	brief = self.brief
@@ -1966,7 +2265,7 @@ class Register(Node):
 
 	write = stream.write
 	# Output the code for the get method:
-	stream.write("{0:i}case {1}:{0:b}".format(style, number))
+	stream.write("{0:i}case {1}:{0:b}".format(style, offset + number))
 	stream.write("{0:i}// {1:g}: {2}\n".format(style, self, brief))
 	stream.write("{0:i}if (execute_mode){0:b}".format(style))
 	stream.write("{0:i}{1} {2} = {3}.{4:g}();\n". \
@@ -1978,7 +2277,7 @@ class Register(Node):
 	stream.write("{0:e}".format(style))
 
 	# Output the case for the set method:
-	stream.write("{0:i}case {1}:{0:b}".format(style, number + 1))
+	stream.write("{0:i}case {1}:{0:b}".format(style, offset + number + 1))
 	stream.write("{0:i}// {1:s}: {2}\n".format(style, self, brief))
 	stream.write("{0:i}if (execute_mode){0:b}".format(style))
 	stream.write("{0:i}{1} {2} = maker_bus->{3}_get();\n". \
@@ -2271,6 +2570,7 @@ class XML_Check:
 	module.required_attribute("Name")
 	module.required_attribute("Brief")
 	module.required_attribute("Vendor")
+	module.optional_attribute("Generate")
 	module.optional_attribute("Sub_Class")
 	module.child_tag("Overview")
 	module.child_tag("Connector")
@@ -2282,6 +2582,7 @@ class XML_Check:
 	module_use.required_attribute("Name")
 	module_use.required_attribute("Vendor")
 	module_use.required_attribute("Module")
+	module_use.optional_attribute("Offset")
 	module_use.child_tag("Module_Use")
 
 	overview = XML_Check("Overview", True, tags)
@@ -2343,6 +2644,9 @@ class XML_Check:
     def element_check(element, tags):
 	""" Check *element* for consistency using the *XML_Check* objects
 	    in the *tags* dictionary. """
+
+	assert isinstance(element, ET.Element)
+	assert isinstance(tags, dict)
 
 	# Is *element* a valid tag name:
 	if element.tag in tags:
@@ -2414,7 +2718,7 @@ class XML:
 	# This pattern will match the tag at the beginning of the line:
 	pattern = re.compile("^[ \t]*<\w+")
 
-	# Scacn through each line:
+	# Scan through each line:
 	replaced_lines = []
 	for index in range(len(xml_lines)):
 	    # Fetch each line one at a time:
@@ -2481,7 +2785,7 @@ def main():
     module = Module(module_element, xml, style)
 
     #assert style.indent == 0
-    #module.cpp_slave_write(sketch_dir + "MB7_Slave.ino")
+    #module.ino_slave_write(sketch_dir + "MB7_Slave.ino")
 
     assert style.indent == 0
     module.cpp_local_header_write(lcd32_local_dir + "LCD32_Local.h")

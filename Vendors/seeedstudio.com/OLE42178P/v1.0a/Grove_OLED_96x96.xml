@@ -1,0 +1,15 @@
+<Module Name="Grove OLED 96x96" Vendor="seeedstudio.com"
+ Brief="96 x 96 Color OLED Display">
+  <Overview>
+	The OLED 96x96 twig is a 16 color grayscale 96×96 dot matrix OLED
+	display module with Grove compatible 4pin I2C interface.  The OLED
+	96x96 twig is constructed with 96 x 96 dot matrix OLED module
+	([LY120]) and SSD1327 driver IC.  The characteristics of this
+	display module are high brightness, self-emission, high contrast
+	ratio, slim / thin outline, wide viewing angle, wide temperature
+	range, and low power consumption.
+  </Overview>
+  <Classification Level1="Vendors" Level2="seeedstudio.com" Level3="Grove" />
+  <Classification Level1="Buses" Level2="Grove" />
+  <Classification Level1="Catagories" Level2="Display" />
+</Module>
