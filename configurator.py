@@ -125,8 +125,10 @@ class Application(Frame):
 	self.grid(sticky = N + S + E + W)
 	self.widgets_create()
 	self.buttons_update()
+	self.address_update()
 
 	# Force the roots of both trees to be selected.
+	self.entry_highlight(self.address_entry, True)
 	self.selections_root_tree.select()
 	self.project_root_tree.select()
 	self.module_controls_update(None)
@@ -157,6 +159,80 @@ class Application(Frame):
 	self.maker_bus_base = maker_bus_base
 	self.maker_bus_module = maker_bus_module
 
+    def address_entry_changed(self, string_variable):
+	""" Application: This method is called when the address entry
+	    widget changes. """
+
+	#print("address_entry_changed", string_variable, string_variable.get())
+	self.address_update()
+
+    def address_update(self):
+	""" Application: Update the [Address Update] UI. """
+
+	#print "=>Application.address_update(*)"
+
+	address_entry = self.address_entry
+	address_entry_text = address_entry.get()
+	address_update_button = self.address_update_button
+
+	node = self.project_selected_item.node
+	if isinstance(node, Module_Use):
+	    module_use = node
+            try:
+		address = int(address_entry_text)
+		#print "address={0}".format(address)
+		if module_use.address != address:
+		    self.button_highlight(address_update_button, True, "")
+		else:
+		    self.button_highlight(address_update_button, False,
+		       "Address matches one in project")
+	    except ValueError:
+		self.warn("'{0}' is not a valid address". \
+		  format(address_entry_text))
+		self.button_highlight(address_update_button, False,
+		  "Address is malformed")
+	elif isinstance(node, Project):
+            self.button_highlight(address_update_button,
+	      False, "Project does not have an address")
+	else:
+	    assert False
+
+	#print "<=Application.address_update(*)"
+
+    def address_update_button_click(self):
+	""" Application: This method is invoke when the [Address Update]
+	    button is clicked.  It will change address of the currently
+	    selected *Module_Use* object. """
+
+	#print "=>Application.address_update_button_click()"
+
+	address_update_button = self.address_update_button
+	why_not = self.address_update_button.why_not
+	if why_not == None:
+	    node = self.project_selected_item.node
+	    if isinstance(node, Module_Use):
+		module_use = node
+		address_entry = self.address_entry
+		address_entry_text = address_entry.get()
+		try:
+		    address = int(address_entry_text)
+		    #print "module_use.address={0} address={1}". \
+		    #  format(module_use.address, address)
+		    if module_use.address != address:
+			#print "modified"
+			module_use.address = address
+			self.project_modified = True
+		except ValueError:
+		    self.warn("'{0}' is not a valid address". \
+		      format(address_entry_text))
+		    #print "address is malformed"
+            self.address_update()
+	    self.buttons_update()
+	else:
+	    self.warn(why_not)
+
+	#print "<=Application.address_update_button_click()"
+	    
     def append_button_click(self):
 	""" Application: This method is invoke when the [Append} button
 	    is clicked.  It will insert a module on to the end of the
@@ -233,6 +309,8 @@ class Application(Frame):
 	""" Application: This method is invoked whenever it is time to
 	    update the button highlights. """
 
+	#print "=>Application.buttons_update(*)"
+
 	modules_table = self.modules_table
 
 	# Now figure out if we have something that will work:
@@ -287,6 +365,9 @@ class Application(Frame):
 		generate = module.generate
 	self.button_highlight(self.generate_button, generate,
 	  "Can not generate code for this module")
+
+	#print "<=Application.buttons_update(*)"
+
 
     def call_button_click(self):
 	""" Application: This method is called when it is time to
@@ -473,7 +554,8 @@ class Application(Frame):
 	else:
 	    self.warn(why_not)
 
-    def entry_create(self, frame, row, column, column_span, text):
+    def entry_create(self,
+      frame, row, column, column_span, text, string_variable, callback):
 	""" Application: Create and return an entry widget inside
 	    of *frame* at grid position (*row*, *column*) that spans
 	    *column_span* grid columsn.  The initial value of the
@@ -485,12 +567,27 @@ class Application(Frame):
 	assert isinstance(column, int)
 	assert isinstance(column_span, int)
 	assert isinstance(text, str)
+	assert string_variable == None or isinstance(string_variable, StringVar)
 
 	# Create the *Entry* and specify the grid information:
-	entry = Entry(frame, text = text)
+	if string_variable == None:
+	    entry = Entry(frame, text = text)
+	elif isinstance(string_variable, StringVar):
+	    string_variable = StringVar()
+	    string_variable.trace("w",
+	      lambda name, index, mode, var=string_variable: callback(var))
+	    entry = Entry(frame, text = text, textvariable = string_variable)
+	else:	
+	    assert False
 	entry.grid(row = row, column = column, columnspan = column_span,
 	  sticky = W)
 	return entry
+
+    def entry_update(self, string_variable, index):
+	""" Application: This method is invoked each time """
+
+	print("entry_update", string_variable,
+	  index, self.entry_names[index], string_variable.get())
 
     def entry_highlight(self, entry, enable):
 	""" Application: This method will enable or disable *entry*
@@ -600,6 +697,8 @@ class Application(Frame):
 	self.register_or_function = register_or_function
 
 	# Grab some values from *self*:
+	address_update_button = self.address_update_button
+	address_entry = self.address_entry
 	call_button = self.call_button
 	call_entry = self.call_entry
 	get_button = self.get_button
@@ -955,7 +1054,7 @@ class Application(Frame):
 	#print "Warning: {0}".format(text)
 
     def widgets_create(self):
-	""" Application: This method centralize the creation of all the
+	""" Application: This method centralizes the creation of all the
 	    main window widgets. """
 
 	# Create selections tree frame:
@@ -1011,21 +1110,29 @@ class Application(Frame):
 	self.module_controls_frame = module_controls_frame
 
 	# Create the module controls buttons and entries::
+	self.address_update_button = \
+	  self.button_create(module_controls_frame, "Address Update", 0, 0,
+	  self.address_update_button_click)
+	
+	address_entry_variable = StringVar()
+	self.address_entry = \
+	  self.entry_create(module_controls_frame, 0, 1, 1, "",
+	  address_entry_variable, self.address_entry_changed)
 	self.get_button = \
-	  self.button_create(module_controls_frame, "Get", 0, 0,
+	  self.button_create(module_controls_frame, "Get", 1, 0,
 	  self.get_button_click)
 	self.get_entry = \
-	  self.entry_create(module_controls_frame, 0, 1, 1, "")
+	  self.entry_create(module_controls_frame, 1, 1, 1, "", None, None)
 	self.set_button = \
-	  self.button_create(module_controls_frame, "Set", 1, 0,
+	  self.button_create(module_controls_frame, "Set", 2, 0,
 	  self.set_button_click)
 	self.set_entry = \
-	  self.entry_create(module_controls_frame, 1, 1, 1, "")
+	  self.entry_create(module_controls_frame, 2, 1, 1, "", None, None)
 	self.call_button = \
-	  self.button_create(module_controls_frame, "Call", 2, 0,
+	  self.button_create(module_controls_frame, "Call", 3, 0,
 	  self.call_button_click)
 	self.call_entry = \
-	  self.entry_create(module_controls_frame, 2, 1, 1, "")
+	  self.entry_create(module_controls_frame, 3, 1, 1, "", None, None)
 
 	# Create module frame:
 	module_list_box_frame, reg_and_func_list_box = \
@@ -1152,6 +1259,7 @@ class Shared_Tree_Item(TreeItem):
 
 	# Update the currently selected project item in *application*:
 	application = self.application
+	address_update_button = application.address_update_button
 	if self.project_mode:
 	    application.project_selected_item = self
 
@@ -1159,6 +1267,16 @@ class Shared_Tree_Item(TreeItem):
 	    if isinstance(node, Module_Use):
 		# Lookup the associated *Module* object:
 		module_use = node
+
+		# Update module address entry:
+		address_entry = application.address_entry
+		address_entry.delete(0, END)
+		address_entry.insert(0, "{0}".format(module_use.address))
+
+		# Properly highlight the [Address Update] button:
+		application.address_update()
+
+		# Look up the appropriate module:
 		vendor = module_use.vendor
 		modules_table = application.modules_table
 		module_name = module_use.module_name
@@ -1169,8 +1287,9 @@ class Shared_Tree_Item(TreeItem):
                     assert isinstance(module, Module)
 		    application.module_select(module)
 	else:
+	    application.button_highlight(address_update_button, False,
+	      "Project does not have an address")
 	    application.selections_selected_item = self
-
 
 	# Do all of the common code shared between the two tree widgets:
 	application.buttons_update()

@@ -1452,6 +1452,8 @@ class Module_Use(Node):
 	if module_uses == None:
 	    module_uses = []
 	offset = 0
+	address = -1
+	uid = ""
 
 	# Initialize from *module_use_element* if it is not *None*:
 	if module_use_element != None:
@@ -1460,8 +1462,12 @@ class Module_Use(Node):
 	    name = attributes["Name"]
 	    vendor = attributes["Vendor"]
 	    module_name = attributes["Module"]
+	    if "Address" in attributes:
+		address = int(attributes["Address"])
 	    if "Offset" in attributes:
 		offset = int(attributes["Offset"])
+	    if "UID" in attributes:
+		uid = attributes["UID"]
 
 	    # Extract all of the sub Module_Use's:
 	    for sub_module_use_element in \
@@ -1480,11 +1486,13 @@ class Module_Use(Node):
 	    assert False
 
 	# Load up *self*:
+	self.address = address
 	self.offset = offset
 	self.module_name = module_name
 	self.module_uses = module_uses
 	self.name = name
 	self.style = style
+	self.uid = uid
 	self.vendor = vendor
 
 	# Initialize *Node* base class:
@@ -1617,7 +1625,9 @@ class Module_Use(Node):
 	# Output the opening <Module_Use...>:
 	out_stream.write("{0}<Module_Use".format("  " * indent))
 	out_stream.write(' Name="{0}"'.format(self.name))
+	out_stream.write(' Address="{0}"\n'.format(self.address))
 	out_stream.write(' Offset="{0}"\n'.format(self.offset))
+	out_stream.write(' UID="{0}"\n'.format(self.uid))
 	out_stream.write('{0} Vendor="{1}"'.format("  " * indent, self.vendor))
 	out_stream.write(' Module="{0}"'.format(self.module_name))
 
@@ -2582,7 +2592,9 @@ class XML_Check:
 	module_use.required_attribute("Name")
 	module_use.required_attribute("Vendor")
 	module_use.required_attribute("Module")
+	module_use.optional_attribute("Address")
 	module_use.optional_attribute("Offset")
+	module_use.optional_attribute("UID")
 	module_use.child_tag("Module_Use")
 
 	overview = XML_Check("Overview", True, tags)

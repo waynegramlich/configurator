@@ -30,7 +30,7 @@
 	1000 means the LED is cycled at 1000 Hertz.
     </Description>
   </Register>
-  <Function Name="value get" Type="UShort" Number="5"
+  <Function Name="value get" Number="5"
    Brief="Return Potentiometer Value">
     <Result Name="value" Type="UShort"
      Brief="Returned potentiometer value"/>
