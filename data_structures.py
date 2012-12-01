@@ -875,9 +875,12 @@ class Module(Node):
 	vendor = attributes["Vendor"]
 
 	# Deal with optional attributes:
-	address_re = "^[0-9]+$"
+	address_re = ""
 	if "Address_RE" in attributes:
 	    address_re = attributes["Address_RE"]
+	address_type = ""
+	if "Address_Type" in attributes:
+	    address_type = attributes["Address_Type"]
 	sub_class = None
 	if "Sub_Class" in attributes:
 	    sub_class = attributes["Sub_Class"]
@@ -888,6 +891,7 @@ class Module(Node):
 	# Fill in the contents of *self*:
 	self.classifications = classifications
 	self.address_re = address_re
+	self.address_type = address_type
 	self.name = name
 	self.fence_begin = "  //////// Edit begins here:"
 	self.fence_end = "  //////// Edit ends here:"
@@ -1492,6 +1496,7 @@ class Module_Use(Node):
 	# Load up *self*:
 	self.address = address
 	self.offset = offset
+	self.maker_bus_module = None
 	self.module_name = module_name
 	self.module_uses = module_uses
 	self.name = name
@@ -2591,6 +2596,7 @@ class XML_Check:
 	module.required_attribute("Brief")
 	module.required_attribute("Vendor")
 	module.optional_attribute("Address_RE")
+	module.optional_attribute("Address_Type")
 	module.optional_attribute("Generate")
 	module.optional_attribute("Sub_Class")
 	module.child_tag("Overview")

@@ -1,5 +1,6 @@
 <Module Name="Grove Buzzer" Vendor="seeedstudio.com"
- Address_RE="^[DA][0-9]+$" Brief="Grove Buzzer">
+ Address_RE="^[DA][0-9]+$" Address_Type="Grove"
+ Brief="Grove Buzzer">
   <Overview>
     This is a simple yet enjoyable twig to use.  The piezo can be
     connected to digital outputs, and will emit a tone when the output

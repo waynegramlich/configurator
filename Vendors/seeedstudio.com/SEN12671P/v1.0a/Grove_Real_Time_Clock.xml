@@ -1,5 +1,6 @@
 <Module Name="Grove Real Time Clock" Vendor="seeedstudio.com"
- Address_RE="^[DA][0-9]+$" Brief="Real Time Clock Twig">
+ Address_RE="^[DA][0-9]+$" Address_Type="Grove"
+ Brief="Real Time Clock Twig">
   <Overview>
     The RTC module is a member of Grove System Twig.  It is based on
     the clock chip DS1307 which supports the I2C protocol.  It uses

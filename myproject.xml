@@ -16,7 +16,7 @@
  UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
       </Module_Use>
-      <Module_Use Name="Grove_Duino" Address="146"
+      <Module_Use Name="Grove_Duino" Address="129"
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino">

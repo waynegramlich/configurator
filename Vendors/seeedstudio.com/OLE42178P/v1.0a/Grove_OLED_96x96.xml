@@ -1,4 +1,5 @@
 <Module Name="Grove OLED 96x96" Vendor="seeedstudio.com"
+ Address_RE="^[DA][0-9]+$" Address_Type="Grove"
  Brief="96 x 96 Color OLED Display">
   <Overview>
 	The OLED 96x96 twig is a 16 color grayscale 96×96 dot matrix OLED

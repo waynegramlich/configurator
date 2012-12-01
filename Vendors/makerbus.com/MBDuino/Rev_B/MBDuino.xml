@@ -1,4 +1,5 @@
 <Module Name="MBDuino" Vendor="makerbus.com" Generate="1"
+ Address_RE="^[0-9]+$" Address_Type="MakerBus"
  Brief="Bridge between MakeBus and Arduino(tm) Shield">
   <Overview>
     The Grove Base Shield is an Arduino(tm) compatible shield

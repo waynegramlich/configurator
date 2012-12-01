@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 ## @mainpage Configurator
 #
 # The configurator program provides a graphical user interface for
@@ -58,7 +57,6 @@ class Application(Frame):
 	# Read the data in:
 	style = Style(self)
 	self.maker_bus_base = None	  # MakerBus base object
-	self.maker_bus_module = None	  # MakerBus module object
 	self.project_file_name = None	  # Project file name to read/write
 	self.project_modified = False	  # *True* => project tree modified
 	self.project_root_item = None	  # Root project *TreeItem* tree
@@ -147,17 +145,12 @@ class Application(Frame):
 	if serial == None:
             # No, remember that it did not open:
             maker_bus_base = None
-	    maker_bus_module = None
 	else:
 	    # Yes, create the *maker_bus_base* and *maker_bus_module*:
 	    maker_bus_base = Maker_Bus_Base(serial)
 
-	    # Kludge: 0x92 should not be hard wired in:
-	    maker_bus_module = Maker_Bus_Module(maker_bus_base, 0x92)
-
 	# Remember whether or not we succeeded with the connection:
 	self.maker_bus_base = maker_bus_base
-	self.maker_bus_module = maker_bus_module
 
     def address_entry_changed(self, string_variable):
 	""" Application: This method is called when the address entry
@@ -441,8 +434,10 @@ class Application(Frame):
 		if parameters_length == number_arguments_length:
 		    # We have something to send:
 
+		    # Get the *Maker_Bus_Module* to use:
+		    maker_bus_module = self.maker_bus_module_get(module_use)
+			
 		    # First, start the command:
-		    maker_bus_module = self.maker_bus_module
 		    maker_bus_module.request_begin(module_use.offset + \
 		      function_number)
 
@@ -498,7 +493,12 @@ class Application(Frame):
 		    pass
 		elif function_number == -2:
 		    # Bus_Scan:
-		    maker_bus_module = self.maker_bus_module
+
+		    # Get the *Maker_Bus_Module* to use:
+		    maker_bus_module = self.maker_bus_module_get(module_use)
+			
+                    # Perform the bus scan:
+		    maker_bus_module = module_use.maker_bus_module
 		    maker_bus_base = maker_bus_module.maker_bus_base
 		    ids = maker_bus_base.discovery_mode()
 		    print "bus_scan=", ids
@@ -644,7 +644,10 @@ class Application(Frame):
 	    assert isinstance(register, Register)
 	    type = register.type
 	    number = register.number
-	    maker_bus_module = self.maker_bus_module
+
+	    # Get the *Maker_Bus_Module* to use:
+	    maker_bus_module = self.maker_bus_module_get(module_use)
+
 	    maker_bus_module.request_begin(module_use.offset + number)
 	    maker_bus_module.request_end()
 	    result = 0
@@ -680,6 +683,99 @@ class Application(Frame):
 	label.grid(row = row,
 	  column = column, columnspan = column_span, sticky = W)
 	return label
+
+    def maker_bus_module_get(self, target_module_use):
+	""" Application: This method will return the *Maker_Bus_Module* to
+	    use to access *module_use*. """
+
+	#print "=>Application.maker_bus_module_get(*, '{0}')". \
+	#  format(target_module_use.name)
+
+	# Check arguemnt types:
+	assert isinstance(target_module_use, Module_Use)
+	
+	# First see if we have cached the result:
+	maker_bus_module = target_module_use.maker_bus_module
+	if maker_bus_module == None:
+            # Not cached, so go looking:
+
+	    # Get the project root node:
+	    project_root_node = self.project_root_node
+	    assert isinstance(project_root_node, Project)
+	    project = project_root_node
+
+	    # Recursively visit all of the mode_uses until we find the
+	    # one that matches:
+	    for sub_module_use in project.module_uses:
+		maker_bus_module = \
+		  self.maker_bus_module_get_helper(sub_module_use,
+		  target_module_use, None, 1)
+
+		# If a *Maker_Bus_Module* is returned:
+		if isinstance(maker_bus_module, Maker_Bus_Module):
+		    target_module_use.maker_bus_module = maker_bus_module
+                    break
+
+	#print "=>Application.maker_bus_module_get(*, '{0}') => {1}". \
+	#  format(target_module_use.name, maker_bus_module != None)
+
+	assert maker_bus_module != None
+
+	return maker_bus_module
+
+    def maker_bus_module_get_helper(self, current_module_use,
+      target_module_use, maker_bus_module, indent):
+	""" Application: Return the appropriate *Maker_Bus_Module* object
+	    to use with *target_module_use* starting from *current_module_use*.
+	    *maker_bus_module* passed recursively down until *target_module_use*
+	    is found. """
+
+	
+	#print "{0}=>App._get_helper(*, '{1}', '{2}', {3})". \
+	#  format(" " * indent, current_module_use.name, target_module_use.name,
+	#  maker_bus_module != None)
+
+	result = None
+	current_module = current_module_use.module_lookup(self.modules_table)
+
+	#print "{0}address_type='{1}'". \
+	#  format(" " * indent, current_module.address_type)
+
+	if current_module.address_type == "MakerBus":
+            # Recursive Maker_Bus nodes are not allowed, so we should
+	    # arrive at this point with *maker_bus_module* set to *None*:
+	    assert maker_bus_module == None
+
+	    # Is it cached:
+	    maker_bus_module = current_module_use.maker_bus_module
+            if maker_bus_module == None:
+		# Not cached; create it and cache it:
+		maker_bus_module = Maker_Bus_Module(self.maker_bus_base,
+		  int(current_module_use.address))
+		current_module_use.maker_bus_module = maker_bus_module
+
+	# Have we found the desired *target_module_use*:
+	if current_module_use == target_module_use:
+	    # Yes, cache *maker_bus_module* and return:
+	    target_module_use.maker_bus_module = maker_bus_module
+	    result = maker_bus_module
+	else:
+	    # No, recursivly visit the nodes below:
+	    for sub_module_use in current_module_use.module_uses:
+		result_maker_bus_module = \
+		  self.maker_bus_module_get_helper(sub_module_use,
+		  target_module_use, maker_bus_module, indent + 1)
+
+		# If a *Maker_Bus_Module* is returned, we are done:
+		if isinstance(result_maker_bus_module, Maker_Bus_Module):
+		    result = result_maker_bus_module
+		    break
+
+	#print "{0}<=App._get_helper(*, '{1}', '{2}', {3}) => {4}". \
+	#  format(" " * indent, current_module_use.name, target_module_use.name,
+	#  maker_bus_module != None, result != None)
+
+	return result
 
     def module_controls_update(self, register_or_function):
 	""" Application: Update the highlighting of module controls. """
@@ -927,7 +1023,10 @@ class Application(Frame):
 	    assert isinstance(register, Register)
 	    type = register.type
 	    number = register.number
-	    maker_bus_module = self.maker_bus_module
+
+	    # Get the *Maker_Bus_Module* to use:
+	    maker_bus_module = self.maker_bus_module_get(module_use)
+
 	    set_entry_text = self.set_entry.get()
 	    if set_entry_text.isdigit():
 		value = int(set_entry_text)
