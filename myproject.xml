@@ -11,7 +11,7 @@
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="LCD" Address="-1"
+        <Module_Use Name="lcd" Address="-1"
  Offset="0"
  UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
@@ -71,7 +71,7 @@
  UID=""
          Vendor="arduino.cc" Module="Sensor Shield" />
       </Module_Use>
-      <Module_Use Name="DemPer_Duino" Address="131"
+      <Module_Use Name="Gadget_Duino" Address="131"
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino" />

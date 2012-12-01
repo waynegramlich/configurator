@@ -815,6 +815,35 @@ class Function(Node):
 	# Restore indentation:
 	style.indent_adjust(-1)
 
+## @class Include
+#
+# One include file name for a module
+#
+# More needed here.
+
+class Include():
+
+    ## @brief *Include* constructor
+    #  @param self *Include* object to initialize
+    #  @param include_element *Element* tree element to read from
+    #  @param style *Style* object to control generated code formatting.
+    #
+    # This method will extract the include information from
+    # the XML *include_element* and store the result into *self*.
+
+    def __init__(self, include_element, style):
+
+	# Check argument types:
+	assert isinstance(include_element, ET.Element)
+	assert include_element.tag == "Include"
+	assert isinstance(style, Style)
+
+	# Get the attributes
+	attributes = include_element.attrib
+
+	# Fill in *self*:
+	self.file_name = attributes["File_Name"]
+
 ## @class Module
 #
 # One Module device
@@ -856,6 +885,11 @@ class Module(Node):
 	    classification = Classification(classification_element, style)
 	    classifications.append(classification)
 
+	# Extract all of the includes from <Include ...> tags:
+	includes = []
+	for include_element in module_element.findall("Include"):
+	    includes.append(Include(include_element, style))
+
 	# Extract all of the registers from <Register ...> tags:
 	registers = []
 	for register_element in module_element.findall("Register"):
@@ -892,11 +926,12 @@ class Module(Node):
 	self.classifications = classifications
 	self.address_re = address_re
 	self.address_type = address_type
-	self.name = name
 	self.fence_begin = "  //////// Edit begins here:"
 	self.fence_end = "  //////// Edit ends here:"
 	self.functions = functions
 	self.generate = generate
+	self.includes = includes
+	self.name = name
 	self.registers = registers
 	self.fences = {}
 	self.overview = overview
@@ -1778,6 +1813,8 @@ class Sketch_Generator:
 	    #print "module_key=", module_key
 	    module = modules_table[module_key]
 	    out_stream.write("#include <{0:t}_Local.h>\n".format(module))
+	    for include in module.includes:
+		out_stream.write("#include <{0}>\n".format(include.file_name))
 	out_stream.write("\n")
 
 	# Output one object variable per *module_use*:
@@ -2591,6 +2628,9 @@ class XML_Check:
 	function.child_tag("Parameter")
 	function.child_tag("Result")
 
+	include = XML_Check("Include", False, tags)
+	include.required_attribute("File_Name")
+
 	module = XML_Check("Module", False, tags)
 	module.required_attribute("Name")
 	module.required_attribute("Brief")
@@ -2602,6 +2642,7 @@ class XML_Check:
 	module.child_tag("Overview")
 	module.child_tag("Connector")
 	module.child_tag("Function")
+	module.child_tag("Include")
 	module.child_tag("Register")
 	module.child_tag("Classification")
 
