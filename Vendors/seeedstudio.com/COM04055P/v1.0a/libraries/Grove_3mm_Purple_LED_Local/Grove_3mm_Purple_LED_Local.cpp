@@ -4,15 +4,15 @@
 
 // Put top level includes, typedef's here:
   //////// Edit begins here: TOP_LEVEL
-const int purple_led_pin = 2;
   //////// Edit ends here: TOP_LEVEL
 
 // Constructor
-Grove_3mm_Purple_LED::Grove_3mm_Purple_LED() {
+Grove_3mm_Purple_LED::Grove_3mm_Purple_LED(UByte address) {
   //////// Edit begins here: CONSTRUCTOR
-  pinMode(purple_led_pin, OUTPUT);
   _duty_cycle = 0;
   _frequency = 0;
+  _pin = address;
+  pinMode(_pin, OUTPUT);
   //////// Edit ends here: CONSTRUCTOR
 }
 
@@ -28,9 +28,9 @@ void Grove_3mm_Purple_LED::duty_cycle_set(UByte duty_cycle) {
   //////// Edit begins here: DUTY_CYCLE_SET
   _duty_cycle = duty_cycle;
   if (duty_cycle >= 50) {
-    digitalWrite(purple_led_pin, HIGH);
+    digitalWrite(_pin, HIGH);
   } else {
-    digitalWrite(purple_led_pin, LOW);
+    digitalWrite(_pin, LOW);
   }
   //////// Edit ends here: DUTY_CYCLE_SET
 }

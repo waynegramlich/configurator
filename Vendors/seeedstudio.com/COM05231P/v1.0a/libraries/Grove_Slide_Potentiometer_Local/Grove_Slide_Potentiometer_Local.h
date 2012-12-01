@@ -11,7 +11,7 @@
 class Grove_Slide_Potentiometer : public Maker_Bus_Module {
   public:
     // Constructor
-    Grove_Slide_Potentiometer();
+    Grove_Slide_Potentiometer(UByte address);
 
     // LED duty cycle
     UByte duty_cycle_get();
@@ -26,8 +26,10 @@ class Grove_Slide_Potentiometer : public Maker_Bus_Module {
 
   //////// Edit begins here: PRIVATE
   private:
+    UByte _analog_pin;
     UShort _duty_cycle;
     UShort _frequency;
+    UByte _led_pin;
   //////// Edit ends here: PRIVATE
 };
 

@@ -11,7 +11,7 @@
 class Grove_5mm_Blue_LED : public Maker_Bus_Module {
   public:
     // Constructor
-    Grove_5mm_Blue_LED();
+    Grove_5mm_Blue_LED(UByte address);
 
     // LED duty cycle
     UByte duty_cycle_get();
@@ -23,6 +23,7 @@ class Grove_5mm_Blue_LED : public Maker_Bus_Module {
 
   //////// Edit begins here: PRIVATE
   private:
+    UByte _pin;
     UShort _duty_cycle;
     UShort _frequency;
   //////// Edit ends here: PRIVATE

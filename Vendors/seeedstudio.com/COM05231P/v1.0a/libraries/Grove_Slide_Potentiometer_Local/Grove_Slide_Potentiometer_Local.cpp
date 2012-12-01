@@ -4,16 +4,16 @@
 
 // Put top level includes, typedef's here:
   //////// Edit begins here: TOP_LEVEL
-const int analog_pin = A0;
-const int led_pin = A1;
   //////// Edit ends here: TOP_LEVEL
 
 // Constructor
-Grove_Slide_Potentiometer::Grove_Slide_Potentiometer() {
+Grove_Slide_Potentiometer::Grove_Slide_Potentiometer(UByte address) {
   //////// Edit begins here: CONSTRUCTOR
-  pinMode(led_pin, OUTPUT);
+  _analog_pin = address;
   _duty_cycle = 0;
   _frequency = 0;
+  _led_pin = address + 1;
+  pinMode(_led_pin, OUTPUT);
   //////// Edit ends here: CONSTRUCTOR
 }
 
@@ -29,9 +29,9 @@ void Grove_Slide_Potentiometer::duty_cycle_set(UByte duty_cycle) {
   //////// Edit begins here: DUTY_CYCLE_SET
   _duty_cycle = duty_cycle;
   if (duty_cycle >= 50) {
-    digitalWrite(led_pin, HIGH);
+    digitalWrite(_led_pin, HIGH);
   } else {
-    digitalWrite(led_pin, LOW);
+    digitalWrite(_led_pin, LOW);
   }
   //////// Edit ends here: DUTY_CYCLE_SET
 }
@@ -54,7 +54,7 @@ void Grove_Slide_Potentiometer::frequency_set(UShort frequency) {
 UShort Grove_Slide_Potentiometer::value_get() {
   UShort value;
   //////// Edit begins here: VALUE_GET
-  return (UShort)analogRead(analog_pin);
+  return (UShort)analogRead(_analog_pin);
   //////// Edit ends here: VALUE_GET
   return value;
 }

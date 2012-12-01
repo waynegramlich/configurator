@@ -11,7 +11,7 @@
 class Grove_Buzzer : public Maker_Bus_Module {
   public:
     // Constructor
-    Grove_Buzzer();
+    Grove_Buzzer(UByte address);
 
     // LED duty cycle
     UByte duty_cycle_get();
@@ -25,6 +25,7 @@ class Grove_Buzzer : public Maker_Bus_Module {
   private:
     UShort _duty_cycle;
     UShort _frequency;
+    UByte _pin;
   //////// Edit ends here: PRIVATE
 };
 

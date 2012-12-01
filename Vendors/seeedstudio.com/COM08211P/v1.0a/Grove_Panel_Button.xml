@@ -1,5 +1,5 @@
 <Module Name="Grove Panel Button" Vendor="seeedstudio.com"
- Brief="Grove Panel Button">
+ Address_RE="^[DA][0-9]+$" Brief="Grove Panel Button">
   <Overview>
     This Grove Panel Button is a sister version of original Grove
     Button. They are identical except the Grove connecter is moved

@@ -1,5 +1,5 @@
 <Module Name="Grove Serial LCD" Vendor="seeedstudio.com"
- Brief="16 x 2 LCD Display">
+ Address_RE="^[DA][0-9]+$" Brief="16 x 2 LCD Display">
   <Overview>
     The Serial LCD Driver twig is an UART based LCD1602 display
     (Hitachi HD44780 or a compatible LCD).  It can control LCD1602

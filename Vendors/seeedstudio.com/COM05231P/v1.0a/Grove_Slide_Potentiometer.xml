@@ -1,5 +1,5 @@
 <Module Name="Grove Slide Potentiometer" Vendor="seeedstudio.com"
- Brief="Grove Slide Potentiometer">
+ Address_RE="^[DA][0-9]+$" Brief="Grove Slide Potentiometer">
   <Overview>
     This slide potentiometer is a linear variable resistor with a
     total resistance of 10k.  When you move the lever from one side

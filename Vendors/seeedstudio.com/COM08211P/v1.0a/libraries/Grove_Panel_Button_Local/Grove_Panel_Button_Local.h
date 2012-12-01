@@ -11,12 +11,14 @@
 class Grove_Panel_Button : public Maker_Bus_Module {
   public:
     // Constructor
-    Grove_Panel_Button();
+    Grove_Panel_Button(UByte address);
 
     // Return whether or not button is pressed
     Logical is_pressed();
 
   //////// Edit begins here: PRIVATE
+  private:
+    UByte _pin;
   //////// Edit ends here: PRIVATE
 };
 

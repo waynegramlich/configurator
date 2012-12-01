@@ -4,15 +4,15 @@
 
 // Put top level includes, typedef's here:
   //////// Edit begins here: TOP_LEVEL
-const int buzzer_pin = 6;
   //////// Edit ends here: TOP_LEVEL
 
 // Constructor
-Grove_Buzzer::Grove_Buzzer() {
+Grove_Buzzer::Grove_Buzzer(UByte address) {
   //////// Edit begins here: CONSTRUCTOR
-  pinMode(buzzer_pin, OUTPUT);
   _duty_cycle = 0;
   _frequency = 0;
+  _pin = address;
+  pinMode(_pin, OUTPUT);
   //////// Edit ends here: CONSTRUCTOR
 }
 
@@ -28,9 +28,9 @@ void Grove_Buzzer::duty_cycle_set(UByte duty_cycle) {
   //////// Edit begins here: DUTY_CYCLE_SET
   _duty_cycle = duty_cycle;
   if (duty_cycle >= 50) {
-    digitalWrite(buzzer_pin, HIGH);
+    digitalWrite(_pin, HIGH);
   } else {
-    digitalWrite(buzzer_pin, LOW);
+    digitalWrite(_pin, LOW);
   }
   //////// Edit ends here: DUTY_CYCLE_SET
 }

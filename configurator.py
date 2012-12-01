@@ -169,7 +169,7 @@ class Application(Frame):
     def address_update(self):
 	""" Application: Update the [Address Update] UI. """
 
-	#print "=>Application.address_update(*)"
+	#print "=>Application.address_update(*):"
 
 	address_entry = self.address_entry
 	address_entry_text = address_entry.get()
@@ -178,19 +178,24 @@ class Application(Frame):
 	node = self.project_selected_item.node
 	if isinstance(node, Module_Use):
 	    module_use = node
-            try:
-		address = int(address_entry_text)
-		#print "address={0}".format(address)
-		if module_use.address != address:
+            module = module_use.module_lookup(self.modules_table)
+	    assert isinstance(module, Module)
+            if module_use.address != address_entry_text:
+		address_re = re.compile(module.address_re)
+	    	match = address_re.match(address_entry_text)
+		if match:
+		    #print "{0} matches {1}". \
+		    #  format(address_entry_text, module.address_re)
 		    self.button_highlight(address_update_button, True, "")
 		else:
+		    #print "{0} does not match {1}". \
+		    #  format(address_entry_text, module.address_re)
 		    self.button_highlight(address_update_button, False,
-		       "Address matches one in project")
-	    except ValueError:
-		self.warn("'{0}' is not a valid address". \
-		  format(address_entry_text))
+		      "Address is not valid (RE='{0}')". \
+		      format(module.address_re))
+	    else:
 		self.button_highlight(address_update_button, False,
-		  "Address is malformed")
+		  "Adress matches one in project")
 	elif isinstance(node, Project):
             self.button_highlight(address_update_button,
 	      False, "Project does not have an address")
@@ -214,18 +219,10 @@ class Application(Frame):
 		module_use = node
 		address_entry = self.address_entry
 		address_entry_text = address_entry.get()
-		try:
-		    address = int(address_entry_text)
-		    #print "module_use.address={0} address={1}". \
-		    #  format(module_use.address, address)
-		    if module_use.address != address:
-			#print "modified"
-			module_use.address = address
-			self.project_modified = True
-		except ValueError:
-		    self.warn("'{0}' is not a valid address". \
-		      format(address_entry_text))
-		    #print "address is malformed"
+		if module_use.address != address_entry_text:
+		    #print "modified"
+		    module_use.address = address_entry_text
+		    self.project_modified = True
             self.address_update()
 	    self.buttons_update()
 	else:
@@ -609,24 +606,25 @@ class Application(Frame):
 	why_not = self.open_button.why_not
 	if why_not == None:
             # Pop up a file name chooser:
-	    print "[Generate] button clicked"
+	    #print "[Generate] button clicked"
 
 	    project_selected_item = self.project_selected_item
 	    project_selected_node = project_selected_item.node
 	    assert isinstance(project_selected_node, Module_Use)
+	    root_module_use = project_selected_node
 
 	    name = project_selected_node.name
 	    sketch_generator = Sketch_Generator(name,
 	      self.modules_table, self.style)
 
-	    project_selected_node.sketch_generate(sketch_generator, 0)
+	    root_module_use.sketch_generate(sketch_generator, 0)
 
-	    offsets_modified = sketch_generator.write()
+	    offsets_modified = sketch_generator.write(root_module_use)
 	    if offsets_modified:
 		self.project_modified = True
 		self.buttons_update()
-	    print "off_mod={0} pro_mod={1}". \
-	      format(offsets_modified, self.project_modified)
+	    #print "off_mod={0} pro_mod={1}". \
+	    #  format(offsets_modified, self.project_modified)
 	else:
 	    self.warn(why_not)
 
@@ -1043,6 +1041,7 @@ class Application(Frame):
 	    out_stream.close()
 	    self.project_modified = False
 	    self.buttons_update()
+            self.address_update()
 	else:
 	    self.warn(why_not)
 

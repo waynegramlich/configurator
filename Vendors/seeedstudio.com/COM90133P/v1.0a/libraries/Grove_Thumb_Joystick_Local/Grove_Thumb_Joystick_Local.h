@@ -11,7 +11,7 @@
 class Grove_Thumb_Joystick : public Maker_Bus_Module {
   public:
     // Constructor
-    Grove_Thumb_Joystick();
+    Grove_Thumb_Joystick(UByte address);
 
     // Return the Left/Right Thumbstick value
     UShort left_right_get();
@@ -23,6 +23,9 @@ class Grove_Thumb_Joystick : public Maker_Bus_Module {
     Logical is_pressed();
 
   //////// Edit begins here: PRIVATE
+  private:
+    UByte _left_right_pin;
+    UByte _up_down_pin;
   //////// Edit ends here: PRIVATE
 };
 

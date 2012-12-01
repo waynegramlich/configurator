@@ -875,6 +875,9 @@ class Module(Node):
 	vendor = attributes["Vendor"]
 
 	# Deal with optional attributes:
+	address_re = "^[0-9]+$"
+	if "Address_RE" in attributes:
+	    address_re = attributes["Address_RE"]
 	sub_class = None
 	if "Sub_Class" in attributes:
 	    sub_class = attributes["Sub_Class"]
@@ -884,6 +887,7 @@ class Module(Node):
 
 	# Fill in the contents of *self*:
 	self.classifications = classifications
+	self.address_re = address_re
 	self.name = name
 	self.fence_begin = "  //////// Edit begins here:"
 	self.fence_end = "  //////// Edit ends here:"
@@ -999,7 +1003,7 @@ class Module(Node):
 
 	# Generate the constructor signature for the class:
 	out_stream.write("{0:i}// Constructor\n".format(style))
-	out_stream.write("{0:i}{1:t}();\n\n".format(style, self))
+	out_stream.write("{0:i}{1:t}(UByte address);\n\n".format(style, self))
 
 	# Generate method declarations for each *register*:
 	for register in self.registers:
@@ -1076,7 +1080,7 @@ class Module(Node):
 
 	# Output the constructor with a fence in the middle:
 	out_stream.write("// Constructor\n")
-	out_stream.write("{0:t}::{0:t}(){1:b}".format(self, style))
+	out_stream.write("{0:t}::{0:t}(UByte address){1:b}".format(self, style))
 	self.fence_write("CONSTRUCTOR", out_stream)
 	out_stream.write("{0:e}\n".format(style))
 
@@ -1160,8 +1164,8 @@ class Module(Node):
     def ino_slave_write(self, offset, variable_name, out_stream):
 
 	original_offset = offset
-	print "=>Module.ino_slave_write({0}, {1}, *)". \
-	  format(offset, variable_name)
+	#print "=>Module.ino_slave_write({0}, {1}, *)". \
+	#  format(offset, variable_name)
 
 	# Check argument types:
 	assert isinstance(offset, int)
@@ -1189,8 +1193,8 @@ class Module(Node):
 
 	offset += last_number + 1
 
-	print "<=Module.ino_slave_write({0}, {1}, *)=>{2}". \
-	  format(original_offset, variable_name, offset)
+	#print "<=Module.ino_slave_write({0}, {1}, *)=>{2}". \
+	#  format(original_offset, variable_name, offset)
 
 	return offset
 
@@ -1452,7 +1456,7 @@ class Module_Use(Node):
 	if module_uses == None:
 	    module_uses = []
 	offset = 0
-	address = -1
+	address = ""
 	uid = ""
 
 	# Initialize from *module_use_element* if it is not *None*:
@@ -1463,7 +1467,7 @@ class Module_Use(Node):
 	    vendor = attributes["Vendor"]
 	    module_name = attributes["Module"]
 	    if "Address" in attributes:
-		address = int(attributes["Address"])
+		address = attributes["Address"]
 	    if "Offset" in attributes:
 		offset = int(attributes["Offset"])
 	    if "UID" in attributes:
@@ -1512,8 +1516,8 @@ class Module_Use(Node):
     def ino_slave_write(self, offset, module, out_stream):
 
 	original_offset = offset
-	print "=>Module_use.ino_slave_write({0}, {1}, {2}, *)". \
-	  format(self.name, offset, module.name)
+	#print "=>Module_Use.ino_slave_write({0}, {1}, {2}, *)". \
+	#  format(self.name, offset, module.name)
 
 	# Check argument types:
 	assert isinstance(offset, int)
@@ -1527,8 +1531,8 @@ class Module_Use(Node):
 
 	out_stream.write("\n")
 
-	print "<=Module_use.ino_slave_write({0}, {1}, {2}, *) => {3}". \
-	  format(self.name, original_offset, module.name, offset)
+	#print "<=Module_Use.ino_slave_write({0}, {1}, {2}, *) => {3}". \
+	#  format(self.name, original_offset, module.name, offset)
 
 	return offset
 
@@ -1561,7 +1565,11 @@ class Module_Use(Node):
     ## @brief Look up *Module* associated with *self* from *modules_table*
     #  @param self *Module_Use* to use
     #  @param modules_table *dict* Modules table keyed by (vendor, module_name)
-    #  @result *Module* that corresponds
+    #  @result *Module* that corresponds to *self*
+    #
+    # This method will return the *Module* associated with *self* using
+    # *modules_table*.  If no corresponding *Module* is found, *None* is
+    # returned.
 
     def module_lookup(self, modules_table):
 
@@ -1680,7 +1688,7 @@ class Sketch_Generator:
 
     #  @result *bool* *True* if any *Module_Use* offset is changed.
 
-    def write(self):
+    def write(self, root_module_use):
 	modules_table = self.modules_table
 	unique_modules = self.unique_modules
 
@@ -1776,7 +1784,8 @@ class Sketch_Generator:
 
 	    module_uses = unique_modules[module_key]
             for module_use in module_uses:
-		out_stream.write("{0:t} {1};\n".format(module, module_use.name))
+		out_stream.write("{0:t} {1}({2});\n". \
+		  format(module, module_use.name, module_use.address))
 	out_stream.write("\n")
 
 	# Output command_process() declaration:
@@ -1791,7 +1800,7 @@ class Sketch_Generator:
 
 	if debug:
 	    out_stream.write("{0:i}Serial.begin(9600);\n".format(style))
-	    out_stream.write('{0:i}Serial.print("\\n{1}:\\n");'. \
+	    out_stream.write('{0:i}Serial.print("\\n{1}:\\n");\n'. \
 	      format(style, self.name))
 
 	out_stream.write("{0:e}\n\n".format(style))
@@ -1799,7 +1808,8 @@ class Sketch_Generator:
 	# Output the loop() routine:
 	out_stream.write("void loop(){0:b}".format(style))
 	out_stream.write( \
-	  "{0:i}maker_bus.slave_mode(0x92, command_process);\n".format(style))
+	  "{0:i}maker_bus.slave_mode({1}, command_process);\n". \
+	  format(style, root_module_use.address))
 	out_stream.write("{0:e}\n\n".format(style))
 
 	# Output the command processor routine:
@@ -1816,13 +1826,13 @@ class Sketch_Generator:
 
 	    module_uses = unique_modules[module_key]
             for module_use in module_uses:
-		print "B:mod.name={0} mod.offset={1} offset={2} modified={3}". \
-		  format(module_use.name, module_use.offset, offset, modified)
+		#print "B:mod.name={0} mod.off={1} offset={2} modified={3}". \
+		#  format(module_use.name, module_use.offset, offset, modified)
 		if module_use.offset != offset:
 		    module_use.offset = offset
 		    modified = True		    
-		print "A:mod.name={0} mod.offset={1} offset={2} modified={3}". \
-		  format(module_use.name, module_use.offset, offset, modified)
+		#print "A:mod.name={0} mod.off={1} offset={2} modified={3}". \
+		#  format(module_use.name, module_use.offset, offset, modified)
 
 		offset = module_use.ino_slave_write(offset, module, out_stream)
 
@@ -1834,7 +1844,7 @@ class Sketch_Generator:
 	# Close *out_stream*:
 	out_stream.close()
 
-	print "modified={0}".format(modified)
+	#print "modified={0}".format(modified)
 	return modified
 
 ## @class Overview
@@ -2580,6 +2590,7 @@ class XML_Check:
 	module.required_attribute("Name")
 	module.required_attribute("Brief")
 	module.required_attribute("Vendor")
+	module.optional_attribute("Address_RE")
 	module.optional_attribute("Generate")
 	module.optional_attribute("Sub_Class")
 	module.child_tag("Overview")
@@ -2593,6 +2604,7 @@ class XML_Check:
 	module_use.required_attribute("Vendor")
 	module_use.required_attribute("Module")
 	module_use.optional_attribute("Address")
+	module_use.optional_attribute("Address_RE")
 	module_use.optional_attribute("Offset")
 	module_use.optional_attribute("UID")
 	module_use.child_tag("Module_Use")

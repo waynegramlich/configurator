@@ -1,5 +1,5 @@
 <Module Name="Grove Thumb Joystick" Vendor="seeedstudio.com"
- Brief="Grove Thumb Joystick">
+ Address_RE="^[DA][0-9]+$" Brief="Grove Thumb Joystick">
   <Overview>
     The Grove Thumb Joystick is a Grove compatible module which
     is very similar to the 'analog' joystick on PS2 (PlayStation 2)

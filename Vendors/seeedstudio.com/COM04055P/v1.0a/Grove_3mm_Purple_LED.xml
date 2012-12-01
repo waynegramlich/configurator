@@ -1,5 +1,5 @@
 <Module Name="Grove 3mm Purple LED" Vendor="seeedstudio.com"
- Brief="Grove 3mm Purple LED">
+ Address_RE="^[DA][0-9]+$" Brief="Grove 3mm Purple LED">
   <Overview>
     The Grove Purple LED (3mm) is a purple LED twig.
   </Overview>

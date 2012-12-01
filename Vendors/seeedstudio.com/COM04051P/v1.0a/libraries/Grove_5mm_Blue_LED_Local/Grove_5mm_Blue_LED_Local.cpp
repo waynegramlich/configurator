@@ -4,15 +4,15 @@
 
 // Put top level includes, typedef's here:
   //////// Edit begins here: TOP_LEVEL
-const int blue_led_pin = 4;
   //////// Edit ends here: TOP_LEVEL
 
 // Constructor
-Grove_5mm_Blue_LED::Grove_5mm_Blue_LED() {
+Grove_5mm_Blue_LED::Grove_5mm_Blue_LED(UByte address) {
   //////// Edit begins here: CONSTRUCTOR
-  pinMode(blue_led_pin, OUTPUT);
+  _pin = address;
   _duty_cycle = 0;
   _frequency = 0;
+  pinMode(_pin, OUTPUT);
   //////// Edit ends here: CONSTRUCTOR
 }
 
@@ -29,10 +29,10 @@ void Grove_5mm_Blue_LED::duty_cycle_set(UByte duty_cycle) {
   _duty_cycle = duty_cycle;
   if (duty_cycle >= 50) {
     Serial.write("B1");
-    digitalWrite(blue_led_pin, HIGH);
+    digitalWrite(_pin, HIGH);
   } else {
     Serial.write("B0");
-    digitalWrite(blue_led_pin, LOW);
+    digitalWrite(_pin, LOW);
   }
   //////// Edit ends here: DUTY_CYCLE_SET
 }

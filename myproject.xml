@@ -16,7 +16,7 @@
  UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
       </Module_Use>
-      <Module_Use Name="Grove_Duino" Address="129"
+      <Module_Use Name="Grove_Duino" Address="146"
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino">
@@ -24,27 +24,27 @@
  Offset="0"
  UID=""
          Vendor="seeedstudio.com" Module="Grove Base Shield">
-          <Module_Use Name="purple_led" Address="-1"
+          <Module_Use Name="purple_led" Address="D2"
  Offset="7"
  UID=""
            Vendor="seeedstudio.com" Module="Grove 3mm Purple LED" />
-          <Module_Use Name="blue_led" Address="-1"
+          <Module_Use Name="blue_led" Address="D4"
  Offset="11"
  UID=""
            Vendor="seeedstudio.com" Module="Grove 5mm Blue LED" />
-          <Module_Use Name="buzzer" Address="-1"
+          <Module_Use Name="buzzer" Address="D6"
  Offset="3"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Buzzer" />
-          <Module_Use Name="Grove OLED 96x96" Address="-1"
+          <Module_Use Name="Grove OLED 96x96" Address="999"
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove OLED 96x96" />
-          <Module_Use Name="button" Address="-1"
+          <Module_Use Name="button" Address="D8"
  Offset="21"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Panel Button" />
-          <Module_Use Name="clock" Address="-1"
+          <Module_Use Name="clock" Address="D99"
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Real Time Clock" />
@@ -52,11 +52,11 @@
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Serial LCD" />
-          <Module_Use Name="slide_pot" Address="-1"
+          <Module_Use Name="slide_pot" Address="A0"
  Offset="15"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Slide Potentiometer" />
-          <Module_Use Name="joystick" Address="-1"
+          <Module_Use Name="joystick" Address="A2"
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Thumb Joystick" />
