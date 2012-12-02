@@ -1,0 +1,20 @@
+<Module Name="Gadgeteer 7 LED" Vendor="ghielectronics.com"
+ Address_RE="^NG_Y[0-3]$" Address_Type="Gadgeteer" Brief="Gadgeteer 7 LED's">
+  <Overview>
+    This module has 6 green LED's arranged in a circle with 60 degrees
+    separating each LED with a center red LED.  The LED's are labeled
+    D1 through D7.  D1 is on the top of the circle, with D2 through D6
+    occurring in clockwise circular fashion.  The center red LED is D7.
+  </Overview>
+  <Classification Level1="Vendors" Level2="ghielectronics.com"
+   Level3="Gadgeteer" />
+  <Classification Level1="Buses" Level2="Gadgeteer" />
+  <Classification Level1="Catagories" Level2="Display" Level3="LED" />
+  <Register Name="LED_Bits" Type="UByte" Number="0"
+   Brief="LED duty cycle">
+    <Description>
+	This register specifies which LED's are to be lit up.
+	Bit 0 corresponds to D1, and bit 6 corresponds to D7.
+    </Description>
+  </Register>
+</Module>

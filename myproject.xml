@@ -79,7 +79,16 @@
       <Module_Use Name="Gadget_Duino" Address="131"
  Offset="0"
  UID=""
-       Vendor="makerbus.com" Module="MBDuino" />
+       Vendor="makerbus.com" Module="MBDuino">
+        <Module_Use Name="led7" Address="NG_Y1"
+ Offset="3"
+ UID=""
+         Vendor="ghielectronics.com" Module="Gadgeteer 7 LED" />
+        <Module_Use Name="joystick" Address="NG_A2"
+ Offset="0"
+ UID=""
+         Vendor="ghielectronics.com" Module="Gadgeteer Joystick" />
+      </Module_Use>
     </Module_Use>
   </Module_Use>
 </Project>

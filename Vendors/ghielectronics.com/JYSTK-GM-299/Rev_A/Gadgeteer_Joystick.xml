@@ -1,0 +1,39 @@
+<Module Name="Gadgeteer Joystick" Vendor="ghielectronics.com"
+ Address_RE="^NG_A[0-3]$" Address_Type="Gadgeteer"
+ Brief="Gadgeteer Joystick">
+  <Overview>
+    The Gadgeteer Joystick is an X/Y joystick that can all be depressed
+    like button.  The X/Y values will be between 200~700.
+  </Overview>
+  <Classification Level1="Vendors" Level2="ghielectronics.com"
+   Level3="Gadgeteer" />
+  <Classification Level1="Buses" Level2="Gadgeteer" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Function Name="left_right_get" Number="0"
+   Brief="Return the Left/Right Joystick value">
+    <Result Name="left_right_value" Type="UShort"
+     Brief="Return left/right value"/>
+    <Description>
+	This function will return the left/right value as a number
+	between approximately 200 to 700.
+    </Description>
+  </Function>
+  <Function Name="up_down_get" Number="1"
+   Brief="Return the Left/Right Joystick value">
+    <Result Name="up_down_value" Type="UShort"
+     Brief="Return up/down value"/>
+    <Description>
+	This function will return the up/down value as a number
+	between approximately 200 to 700.
+    </Description>
+  </Function>
+  <Function Name="is_pressed" Number="2"
+   Brief="Return *True* if joystick is depressed">
+    <Result Name="depressed_value" Type="Logical"
+     Brief="Return depressed value"/>
+    <Description>
+	This function will *True* if the joystick is depressed;
+	and *False* otherwise.
+    </Description>
+  </Function>
+</Module>

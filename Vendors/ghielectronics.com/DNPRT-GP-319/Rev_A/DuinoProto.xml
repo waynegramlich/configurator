@@ -1,0 +1,13 @@
+<Module Name="Sensor Shield" Vendor="arduino.cc"
+ Brief="Aduino Shield to connect to .Net Gadget sockets">
+  <Overview>
+  </Overview>
+  <Classification Level1="Vendors" Level2="ghielectronics.com"
+   Level3="Gadgeteer" />
+  <Classification Level1="Vendors" Level2="ghielectronics.com"
+   Level3="Shield" />
+  <Classification Level1="Buses" Level2="Shield" />
+  <Classification Level1="Catagories" Level2="Bridges"
+   Level3="Shield" Level4="Shield=>Gadgeteer" />
+  <Connector Name="Shield" Bus="Shield" Physical_Connector="Shield30" />
+</Module>
