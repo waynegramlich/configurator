@@ -11,7 +11,7 @@
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="lcd" Address="-1"
+        <Module_Use Name="lcd" Address="0"
  Offset="0"
  UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
@@ -36,7 +36,7 @@
  Offset="3"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Buzzer" />
-          <Module_Use Name="Grove OLED 96x96" Address="999"
+          <Module_Use Name="oled96x96" Address="D99"
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove OLED 96x96" />
@@ -48,7 +48,7 @@
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Real Time Clock" />
-          <Module_Use Name="Grove Serial LCD" Address="-1"
+          <Module_Use Name="serial_lcd" Address="D99"
  Offset="0"
  UID=""
            Vendor="seeedstudio.com" Module="Grove Serial LCD" />
@@ -80,14 +80,19 @@
  Offset="0"
  UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="led7" Address="NG_Y1"
- Offset="3"
- UID=""
-         Vendor="ghielectronics.com" Module="Gadgeteer 7 LED" />
-        <Module_Use Name="joystick" Address="NG_A2"
+        <Module_Use Name="DuinoProto" Address=""
  Offset="0"
  UID=""
-         Vendor="ghielectronics.com" Module="Gadgeteer Joystick" />
+         Vendor="arduino.cc" Module="DuinoProto">
+          <Module_Use Name="led7" Address="NG_Y1"
+ Offset="0"
+ UID=""
+           Vendor="ghielectronics.com" Module="Gadgeteer 7 LED" />
+          <Module_Use Name="joystick" Address="NG_A2"
+ Offset="0"
+ UID=""
+           Vendor="ghielectronics.com" Module="Gadgeteer Joystick" />
+        </Module_Use>
       </Module_Use>
     </Module_Use>
   </Module_Use>

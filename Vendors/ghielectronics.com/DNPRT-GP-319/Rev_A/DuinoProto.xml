@@ -1,4 +1,4 @@
-<Module Name="Sensor Shield" Vendor="arduino.cc"
+<Module Name="DuinoProto" Vendor="arduino.cc"
  Brief="Aduino Shield to connect to .Net Gadget sockets">
   <Overview>
   </Overview>
