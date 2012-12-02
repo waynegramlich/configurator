@@ -28,10 +28,10 @@ void Grove_5mm_Blue_LED::duty_cycle_set(UByte duty_cycle) {
   //////// Edit begins here: DUTY_CYCLE_SET
   _duty_cycle = duty_cycle;
   if (duty_cycle >= 50) {
-    Serial.write("B1");
+    Serial.write("x1");
     digitalWrite(_pin, HIGH);
   } else {
-    Serial.write("B0");
+    Serial.write("x0");
     digitalWrite(_pin, LOW);
   }
   //////// Edit ends here: DUTY_CYCLE_SET

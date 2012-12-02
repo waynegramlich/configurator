@@ -91,6 +91,10 @@ class Maker_Bus_Base:
             del request[0: request_length]
 	    request_length = len(request)
 	    self.request_safe -= request_length
+
+	    if trace:
+		print "serial.flush()"
+
 	    serial.flush()
 
 	    # Now get a response:
