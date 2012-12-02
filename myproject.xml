@@ -69,7 +69,12 @@
         <Module_Use Name="Sensor Shield" Address="-1"
  Offset="0"
  UID=""
-         Vendor="arduino.cc" Module="Sensor Shield" />
+         Vendor="arduino.cc" Module="Sensor Shield">
+          <Module_Use Name="liner_pot" Address="TK_I0"
+ Offset="0"
+ UID=""
+           Vendor="arduino.cc" Module="TinkerKit Linear Potentiometer" />
+        </Module_Use>
       </Module_Use>
       <Module_Use Name="Gadget_Duino" Address="131"
  Offset="0"

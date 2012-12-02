@@ -1,0 +1,19 @@
+<Module Name="TinkerKit Linear Potentiometer" Vendor="arduino.cc"
+ Address_RE="^TK_[IO][0-6]$" Address_Type="TinkerKit"
+ Brief="TinkerKit Linear Potentiometer">
+  <Overview>
+    This module is a linear potentiometer.
+  </Overview>
+  <Classification Level1="Vendors" Level2="arduino.cc" Level3="TinkerKit" />
+  <Classification Level1="Buses" Level2="TinkerKit" />
+  <Classification Level1="Catagories" Level2="Input" />
+  <Function Name="value get" Number="5"
+   Brief="Return Potentiometer Value">
+    <Result Name="value" Type="UShort"
+     Brief="Returned potentiometer value"/>
+    <Description>
+	This function returns the current potentiometer value
+	as a number between 0 and 1023.
+    </Description>
+   </Function>
+</Module>

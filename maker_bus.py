@@ -93,7 +93,7 @@ class Maker_Bus_Base:
 	    self.request_safe -= request_length
 
 	    if trace:
-		print "serial.flush()"
+		print "{0}serial.flush()".format(trace_pad)
 
 	    serial.flush()
 
