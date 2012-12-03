@@ -21,29 +21,33 @@ Configurator is a program that is used to configure
 modules that make up an electronic project.  At this
 point in main window looks as follows:
 								<BlockQuote>
-    <Img Src="configurator.png">
+    <Img Src="configurator.png" Alt="Image of Configurator">
 								</BlockQuote>
 The main window has three sub windows:
 								<UL><LI>
     The left window is a "database" of available
     modules.  Currently modules can be selected by
-    Vendors, Categories, or by Buses.  Currently,
-    the MBDuino module is selected.
+    Vendors, Categories, or by Buses.  Currently, 
+    the Vendors section is open with modules from
+    "adafruit.com", "sainsmart.com", and
+    "seedstudio.com" being shown.  The LCD1602 was
+    copied over to the the Project under "LCD_Duino"
+    and renamed to "lcd".
 								</LI><LI>
-    The center window is the project window that
+    The center window is the "Project" window that
     shows the project as nested tree of interconnected
-    modules.  The project is hosted by Raspbery Pi
-    computer, that has a RasPi bridge that connectes
+    modules.  This project is hosted by Raspbery Pi
+    computer, that has a RasPi bridge that connects
     between the Raspberry Pi GPIO connector and a
     MakerBus.  There are 4 modules plugged into the
     MakerBus -- LCD_Duino, Grove_Duino, TinkerKit_Duino,
-    and DemPer_Duino.  All of the modules are
-    Arduino<Sup>&trade;</Sup> compatible board into which
-    shield can be plugged.  The LCD_Duino has an
-    LCD shield plugged into it and the Grove_Duino
-    has a Grove shield plugged into it.  All names
-    in the project tree are specified by the project
-    designer.
+    and Gadget_Duino.  All of the modules are
+    Arduino<Sup>&trade;</Sup> compatible board into
+    which shield can be plugge in MakerBus.  The
+    LCD_Duino has an LCD shield plugged into it and
+    the Grove_Duino has a Grove shield plugged into it.
+    All names in the project tree names are specified
+    by the project designer.
 								</LI><LI>
     The right window is called the module window and
     it allows the Configurator to perform remote
@@ -52,11 +56,29 @@ The main window has three sub windows:
     is highlighted in the middle window.  The [Get],
     [Set], and [Call] buttons are used to directly
     access the module.  Currently, the user has
-    just sent the letter 'H' to the LCD module via
+    just sent the letter '@' to the LCD module via
     the <Em>character_send</Em>() remote procedure
     call.
 
 								</LI></UL>
+								</P><P>
+The [Generate] button is used to generate code for the
+various modules.  For the example above, selecting one
+of "LCD_Duino", "Grove_Duino", "TinkerKit_Duino", or
+"Gadget_Duino" and clicking on the [Generate] button will
+generate an Arduino<Sup>&trade;</Sup> .ino source file
+that can be compiled and downloaded to appropriate
+module.  In addition, clicking on the [Generate] button
+when "RasPi" is selected, will generate a Python module
+that provides interfaces to all of the modules on the
+the MakerBus.  In addition, this Python module can be
+executed as a stand-alone program and will generate a
+GUI program (using Python Tkinter) that can directly
+access all of the registers.  A first cut is shown below:
+								<BlockQuote>
+    <Img Src="myproject.png" Alt="Generated Python GUI">
+								</BlockQuote>
+								</P><P>
 That should provide enough of an overview for now.
 								</P><P>
 The source code is available via

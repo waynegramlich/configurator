@@ -1,96 +1,52 @@
 <Project Name="myproject">
-  <Module_Use Name="Raspberry Pi" Address="-1"
- Offset="0"
- UID=""
+  <Module_Use Name="Raspberry Pi" Address="-1" Offset="0" UID=""
    Vendor="raspberrypi.org" Module="Raspberry Pi">
-    <Module_Use Name="RasPi" Address="-1"
- Offset="0"
- UID=""
+    <Module_Use Name="RasPi" Address="-1" Offset="0" UID=""
      Vendor="makerbus.com" Module="RasPi">
-      <Module_Use Name="LCD_Duino" Address="128"
- Offset="0"
- UID=""
+      <Module_Use Name="LCD_Duino" Address="128" Offset="0" UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="lcd" Address="0"
- Offset="0"
- UID=""
+        <Module_Use Name="lcd" Address="0" Offset="0" UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
       </Module_Use>
-      <Module_Use Name="Grove_Duino" Address="129"
- Offset="0"
- UID=""
+      <Module_Use Name="Grove_Duino" Address="129" Offset="0" UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="Grove_Base_Shield" Address="-1"
- Offset="0"
- UID=""
+        <Module_Use Name="Grove_Base_Shield" Address="-1" Offset="0" UID=""
          Vendor="seeedstudio.com" Module="Grove Base Shield">
-          <Module_Use Name="purple_led" Address="D2"
- Offset="7"
- UID=""
+          <Module_Use Name="purple_led" Address="D2" Offset="7" UID=""
            Vendor="seeedstudio.com" Module="Grove 3mm Purple LED" />
-          <Module_Use Name="blue_led" Address="D4"
- Offset="11"
- UID=""
+          <Module_Use Name="blue_led" Address="D4" Offset="11" UID=""
            Vendor="seeedstudio.com" Module="Grove 5mm Blue LED" />
-          <Module_Use Name="buzzer" Address="D6"
- Offset="3"
- UID=""
+          <Module_Use Name="buzzer" Address="D6" Offset="3" UID=""
            Vendor="seeedstudio.com" Module="Grove Buzzer" />
-          <Module_Use Name="oled96x96" Address="D99"
- Offset="0"
- UID=""
+          <Module_Use Name="oled96x96" Address="D99" Offset="0" UID=""
            Vendor="seeedstudio.com" Module="Grove OLED 96x96" />
-          <Module_Use Name="button" Address="D8"
- Offset="21"
- UID=""
+          <Module_Use Name="button" Address="D8" Offset="21" UID=""
            Vendor="seeedstudio.com" Module="Grove Panel Button" />
-          <Module_Use Name="clock" Address="D99"
- Offset="0"
- UID=""
+          <Module_Use Name="clock" Address="D99" Offset="0" UID=""
            Vendor="seeedstudio.com" Module="Grove Real Time Clock" />
-          <Module_Use Name="serial_lcd" Address="D99"
- Offset="0"
- UID=""
+          <Module_Use Name="serial_lcd" Address="D99" Offset="0" UID=""
            Vendor="seeedstudio.com" Module="Grove Serial LCD" />
-          <Module_Use Name="slide_pot" Address="A0"
- Offset="15"
- UID=""
+          <Module_Use Name="slide_pot" Address="A0" Offset="15" UID=""
            Vendor="seeedstudio.com" Module="Grove Slide Potentiometer" />
-          <Module_Use Name="joystick" Address="A2"
- Offset="0"
- UID=""
+          <Module_Use Name="joystick" Address="A2" Offset="0" UID=""
            Vendor="seeedstudio.com" Module="Grove Thumb Joystick" />
         </Module_Use>
       </Module_Use>
-      <Module_Use Name="TinkerKit_Duino" Address="130"
- Offset="0"
- UID=""
+      <Module_Use Name="TinkerKit_Duino" Address="130" Offset="0" UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="Sensor Shield" Address="-1"
- Offset="0"
- UID=""
+        <Module_Use Name="Sensor Shield" Address="-1" Offset="0" UID=""
          Vendor="arduino.cc" Module="Sensor Shield">
-          <Module_Use Name="liner_pot" Address="TK_I0"
- Offset="0"
- UID=""
+          <Module_Use Name="linear_pot" Address="TK_I0" Offset="0" UID=""
            Vendor="arduino.cc" Module="TinkerKit Linear Potentiometer" />
         </Module_Use>
       </Module_Use>
-      <Module_Use Name="Gadget_Duino" Address="131"
- Offset="0"
- UID=""
+      <Module_Use Name="Gadget_Duino" Address="131" Offset="0" UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="DuinoProto" Address=""
- Offset="0"
- UID=""
+        <Module_Use Name="DuinoProto" Address="" Offset="0" UID=""
          Vendor="arduino.cc" Module="DuinoProto">
-          <Module_Use Name="led7" Address="NG_Y1"
- Offset="0"
- UID=""
+          <Module_Use Name="led7" Address="NG_Y1" Offset="3" UID=""
            Vendor="ghielectronics.com" Module="Gadgeteer 7 LED" />
-          <Module_Use Name="joystick" Address="NG_A2"
- Offset="0"
- UID=""
+          <Module_Use Name="joystick" Address="NG_A2" Offset="0" UID=""
            Vendor="ghielectronics.com" Module="Gadgeteer Joystick" />
         </Module_Use>
       </Module_Use>

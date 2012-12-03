@@ -1,8 +1,9 @@
 *.py[cod]
 
 sketchbook
-
 html
+myproject.py
+
 *~
 
 # C extensions

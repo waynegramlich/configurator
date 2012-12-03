@@ -1,16 +1,11 @@
-<Module Name="MBDuino" Vendor="makerbus.com" Generate="1"
+<Module Name="MBDuino" Vendor="makerbus.com" Generate="Ino_Slave"
  Address_RE="^[0-9]+$" Address_Type="MakerBus"
  Brief="Bridge between MakeBus and Arduino(tm) Shield">
   <Overview>
-    The Grove Base Shield is an Arduino(tm) compatible shield
-    that has 22 Grove connectors on it.  7 of the connectors
-    are connected to the A0-A5 shield pins.  13 of the
-    connectors are connected to pins D2-D13.  1 connector is
-    dedicated to D0-D1 for serial communication.  The final
-    is really not compatible with the Grove architecture at
-    all; all 4 pins are connected to D10-D13 for SPI communication.
-    This shield is a "top shield" in that other shields can not
-    be plugged into it.
+    The MBDuino is a module that has a MakerBus connector and
+    can accept a stack of 1 or more Arduino(tm) compatible shields.
+    It consists of an ATmega324 running at 16MHz with the pins
+    connected up to be compatible with an Arduino(tm) Uno(tm).
   </Overview>
   <Classification Level1="Vendors" Level2="makerbus.com" Level3="Bridges" />
   <Classification Level1="Buses" Level2="MakerBus" />

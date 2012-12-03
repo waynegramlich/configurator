@@ -12,6 +12,7 @@
 
 import os
 import sys
+import stat
 import re
 import xml.etree.ElementTree as ET
 
@@ -761,7 +762,7 @@ class Function(Node):
     def python_write(self, out_stream):
 
 	# Check argument types:
-	assert isinstance(outstream, file)
+	assert isinstance(out_stream, file)
 
 	# Grab some values from *self*:
 	brief = self.brief
@@ -918,9 +919,9 @@ class Module(Node):
 	sub_class = None
 	if "Sub_Class" in attributes:
 	    sub_class = attributes["Sub_Class"]
-	generate = False
+	generate = ""
 	if "Generate" in attributes:
-	    generate = attributes["Generate"] != 0
+	    generate = attributes["Generate"]
 
 	# Fill in the contents of *self*:
 	self.classifications = classifications
@@ -1383,15 +1384,15 @@ class Module(Node):
 
     ## @brief Write out Python RPC access code for *self* to *file_name*
     #  @param self *Module* to write Python code for
-    #  @param file_name *str* file name to write Python code into
+    #  @param out_stream *file* to write Python code out to
     #
     # This method will write out Python access code for *self* out to
     # the file named *file_name*.
 
-    def python_write(self, file_name):
+    def python_write(self, out_stream):
 
 	# Check argument types:
-	assert isinstance(file_name, str)
+	assert isinstance(out_stream, file)
 
 	# Grab some values from *self*:
 	functions = self.functions
@@ -1399,22 +1400,17 @@ class Module(Node):
 	registers = self.registers
 	style = self.style
 
-	out_stream = open(file_name, "w")
-
-	# Output the imports:
-	out_stream.write("from Maker_Bus import *\n")
-	out_stream.write("\n")
-
 	# Output the class:
-	out_stream.write("class {0} (Maker_Bus_Module):\n\n".format(name))
+	out_stream.write("class {0:t}(Maker_Bus_Module):\n\n".format(self))
 	style.indent_adjust(1)
 
 	# Output the initializer:
-	out_stream.write("{0:i}def __init__(self, maker_bus, address):\n". \
+	out_stream.write( \
+	  "{0:i}def __init__(self, maker_bus, address, offset):\n". \
 	  format(style))
 	style.indent_adjust(1)
 	out_stream.write( \
-	  "{0:i}Maker_Bus_Module.__init__(self, maker_bus, address)\n".
+	  "{0:i}Maker_Bus_Module.__init__(self, maker_bus, address, offset)\n".
 	  format(style))
 	style.indent_adjust(-1)
 	out_stream.write("\n")
@@ -1429,7 +1425,6 @@ class Module(Node):
 
 	# All done:
 	style.indent_adjust(-1)
-	out_stream.close()
 
 # Not used any more:
 #
@@ -1532,6 +1527,7 @@ class Module_Use(Node):
 	self.address = address
 	self.offset = offset
 	self.maker_bus_module = None
+	self.maker_bus_address = -1
 	self.module_name = module_name
 	self.module_uses = module_uses
 	self.name = name
@@ -1542,6 +1538,52 @@ class Module_Use(Node):
 	# Initialize *Node* base class:
 	tree_text = "{0}".format(name, vendor, module_name)
 	Node.__init__(self, "Module_Use", tree_text, None, module_uses, style)
+
+    ## @brief Find the MakerBus accessible modules for *self*.
+    #  @param self *Module_Use* to search
+    #  @param accessible_modules *dict* to store accessible modules into
+    #
+    # This method will insert *self* into *accessible_module* keyed by
+    # vendor and name, if it has any registers and or functions defined
+    # by the associated module.  All sub module_uses are recursively scanned
+    # as well.
+
+    def accessible_modules_find(self, modules_table,
+      accessible_modules, accessible_module_uses, maker_bus_address):
+
+	# Lookup the *Module* associated with *self*:
+	module = self.module_lookup(modules_table)
+
+	# Figure out if there are the module has any accessible functions
+	# or registers:
+	last_number = -1
+	for function in module.functions:
+	    if function.number >= 0:
+		last_number = function.number
+	for register in module.registers:
+	    if register.number >= 0:
+		last_number = register.number
+
+	# Add *module* to *accessible_modules* if it has either a function
+	# or register that is accessible:
+	if last_number >= 0:
+	    module_key = (self.vendor, self.module_name)
+	    if not module_key in accessible_modules:
+	        accessible_modules[module_key] = module
+
+	    # Keep track of the module uses as well:
+	    self.maker_bus_address = maker_bus_address
+	    accessible_module_uses[self.name] = self
+
+	# Modules that plug into the MakerBus have an address that needs
+	# to be passed down to the lower modules.
+	if module.generate == "Ino_Slave":
+	    maker_bus_address = self.address
+
+	# Visit all sub *Module_Use*'s as well:
+	for sub_module_use in self.module_uses:
+	    sub_module_use.accessible_modules_find(modules_table,
+	      accessible_modules, accessible_module_uses, maker_bus_address)
 
     ## @brief Generate sketch code for *self* to *out_stream*.
     #  @param self *self* *Module_Use* to generate code for
@@ -1673,8 +1715,8 @@ class Module_Use(Node):
 	# Output the opening <Module_Use...>:
 	out_stream.write("{0}<Module_Use".format("  " * indent))
 	out_stream.write(' Name="{0}"'.format(self.name))
-	out_stream.write(' Address="{0}"\n'.format(self.address))
-	out_stream.write(' Offset="{0}"\n'.format(self.offset))
+	out_stream.write(' Address="{0}"'.format(self.address))
+	out_stream.write(' Offset="{0}"'.format(self.offset))
 	out_stream.write(' UID="{0}"\n'.format(self.uid))
 	out_stream.write('{0} Vendor="{1}"'.format("  " * indent, self.vendor))
 	out_stream.write(' Module="{0}"'.format(self.module_name))
@@ -1728,7 +1770,7 @@ class Sketch_Generator:
 
     #  @result *bool* *True* if any *Module_Use* offset is changed.
 
-    def write(self, root_module_use):
+    def ino_slave_write(self, root_module_use):
 	modules_table = self.modules_table
 	unique_modules = self.unique_modules
 
@@ -2065,6 +2107,276 @@ class Project(Node):
 
 	# Initialize the *Node* base class:
 	Node.__init__(self, "Project", "Project", None, module_uses, style)
+
+    ## @brief Write out the Python code for *self*
+    #  @param self *Project* to generate Python code for
+    #  @param modules_table *dict* contains all modules keyed by vendor and name
+    #
+    # This method will write out the Python code for *self*
+
+    def python_write(self, modules_table):
+
+	name = self.name
+	python_file_name = "{0}.py".format(name)
+	indent = "  "
+
+	# Open the Python output stream:
+	out_stream = open(python_file_name, "w")
+
+	# Output the interpreter header:
+	out_stream.write("#!/usr/bin/python\n\n")
+
+	# Output the imports:
+	out_stream.write("from Tkinter import *\n")
+	out_stream.write("from maker_bus import *\n")
+	out_stream.write("from serial import *\n")
+	out_stream.write("\n")
+
+	# Find the accessible modules and module uses:
+	accessible_modules = {}
+	accessible_module_uses = {}
+	for module_use in self.module_uses:
+	    module_use.accessible_modules_find(modules_table,
+	      accessible_modules, accessible_module_uses, 0)
+
+	# Sort the modules by name:
+	accessible_modules_keys = accessible_modules.keys()
+	accessible_modules_keys.sort(key = lambda key: key[1])
+	accessible_modules_keys.sort(key = lambda key: key[0])
+	accessible_module_uses_keys = accessible_module_uses.keys()
+	accessible_module_uses_keys.sort()
+
+	# Output each module:
+	for accessible_modules_key in accessible_modules_keys:
+	    #out_stream.write("# Vendor:{0}   Module:{1}\n". \
+	    #  format(accessible_modules_key[0], accessible_modules_key[1]))
+            module = accessible_modules[accessible_modules_key]
+	    module.python_write(out_stream)
+
+	# Output the Project class:
+	out_stream.write("class Project:\n\n")
+
+	# Generate the __init__ method:
+	out_stream.write("{0}def __init__(self, maker_bus):\n". \
+	  format(indent * 1))
+
+	# Generate one line per module use:
+	accessible_module_uses_keys = accessible_module_uses.keys()
+	for accessible_module_uses_key in accessible_module_uses_keys:
+	    accessible_module_use = \
+	      accessible_module_uses[accessible_module_uses_key]
+	    accessible_module = \
+	      accessible_module_use.module_lookup(modules_table)
+	    out_stream.write("{0}self.{1} = {2:t}(maker_bus, {3}, {4})\n". \
+	      format(indent * 2, accessible_module_use.name, \
+	      accessible_module, accessible_module_use.maker_bus_address,
+	      accessible_module_use.offset))
+	out_stream.write("\n")
+
+	# Output the Application class:
+	out_stream.write("class Application(Frame):\n\n")
+
+	# Output the __init__() method:
+	out_stream.write("{0}def __init__(self, master = None):\n". \
+ 	  format(indent * 1))
+	out_stream.write("\n")
+
+	out_stream.write("{0}try:\n".format(indent * 2))
+	out_stream.write("{0}serial = Serial(\"/dev/ttyUSB0\", 115200)\n". \
+	  format(indent * 3))
+	out_stream.write("{0}maker_bus_base = Maker_Bus_Base(serial)\n". \
+	  format(indent * 3))
+	out_stream.write("{0}except SerialException:\n".format(indent * 2))
+	out_stream.write("{0}maker_bus_base = None\n".format(indent * 3))
+	out_stream.write("{0}self.maker_bus_base = maker_bus_base\n". \
+	  format(indent * 2))
+	out_stream.write("\n")
+
+	out_stream.write("{0}project = Project(maker_bus_base)\n". \
+	  format(indent * 2))
+	out_stream.write("\n")
+
+	# Output:
+	#        Frame.__init(self, master)
+	#	 self.grid()
+	out_stream.write("{0}Frame.__init__(self, master)\n". \
+	  format(indent * 2))
+	out_stream.write("{0}self.grid()\n".format(indent * 2))
+	out_stream.write("\n")
+
+	# Output:
+	#	registers = self.registers = {}
+	out_stream.write("{0}registers = self.registers = {{}}\n". \
+	  format(indent * 2))
+	out_stream.write("\n")
+
+	# Output a [Read Registers] button:
+	#        self.registers_read_button = \
+	#          Button(self, text = "Registers Read", \
+	#          background = "white", \
+	#          command = self.read_registers_click)
+	#	 self.registers_read_button. \
+	#          grid(row = 0, column = 1)
+	out_stream.write("{0}self.registers_read_button = \\\n". \
+	  format(indent * 2))
+	out_stream.write("{0}Button(self, text = \"Registers Read\", \\\n". \
+	  format(indent * 3))
+	out_stream.write("{0}background = \"white\", \\\n". \
+	  format(indent * 3))
+	out_stream.write("{0}command = self.registers_read_click)\n". \
+	  format(indent * 3))
+	out_stream.write("{0}self.registers_read_button. \\\n". \
+	  format(indent * 2))
+	out_stream.write("{0}grid(row = 0, column = 1)\n". \
+	  format(indent * 3))
+	out_stream.write("\n")
+
+	# Output Button/Entry pairs for each accessible register for
+	# each accessible module:
+	row = 1
+	for accessible_module_uses_key in accessible_module_uses_keys:
+	    accessible_module_use = \
+	      accessible_module_uses[accessible_module_uses_key]
+	    accessible_module = \
+	      accessible_module_use.module_lookup(modules_table)
+	    
+	    registers = accessible_module.registers
+	    for register in registers:
+		# The button name consists of the variable name followed by
+		# the register name:
+		register_name = register.name
+		module_use_name = accessible_module_use.name
+		button_name = "{0}: {1}". \
+		  format(module_use_name, register_name)
+
+		# The lambda function (i.e. an unnamed mini-function)
+		# is a function calls the Application.register_button()
+		# with the button name as its argument:
+		lambda_function = \
+		  "lambda : self.register_click(\"{0}\")".format(button_name)
+
+		# Output:
+		#      self.MODULE_USE_NAME_button = \
+		#        Button(self, text = "BUTTON_NAME", \
+		#        command = lambda: self.register_click("BUTTON_NAME"))
+		#      self.MODULE_USE_NAME_button.
+		#        grid(row = ROW, column = 0)
+		out_stream.write("{0}self.{1}_button = \\\n". \
+		  format(indent * 2, module_use_name))
+		out_stream.write( \
+		  "{0}Button(self, text = \"{1}\", \\\n". \
+		  format(indent * 3, button_name))
+		out_stream.write( \
+		  "{0}background = \"white\", \\\n".format(indent * 3))
+		out_stream.write("{0}command = {1})\n". \
+		 format(indent * 3, lambda_function))
+		out_stream.write("{0}self.{1}_button. \\\n". \
+		  format(indent * 2, module_use_name))
+		out_stream.write("{0}grid(row = {1}, column = 0)\n". \
+		  format(indent * 3, row))
+
+		# Output:
+		#         self.MODULE_USE_NAME_entry = \
+		#           Entry(self, background = "white")
+		#         self.MODULE_USE_NAME_entry. \
+		#           grid(row = ROW, column = 1)
+		out_stream.write("{0}self.{1}_entry = \\\n". \
+		  format(indent * 2, module_use_name))
+		out_stream.write( \
+		  "{0}Entry(self, background = \"white\")\n". \
+		  format(indent * 3))
+		out_stream.write("{0}self.{1}_entry. \\\n". \
+		  format(indent * 2, module_use_name))
+		out_stream.write("{0}grid(row = {1}, column = 1)\n". \
+		  format(indent * 3, row))
+
+		# Output: registers["BUTTON_NAME"] = \
+		#	    (project.MODULE_USE_NAME.REGISTER_NAME_get, \
+		#	     project.MODULE_USE_NAME.REGISTER_NAME_set, \
+		#	     self.MODULE_USE_NAME_button, \
+		#            self.MODULE_USE_NAME_entry)
+		out_stream.write("{0}registers[\"{1}\"] = \\\n". \
+		  format(indent * 2, button_name))
+		out_stream.write("{0}(project.{1}.{2}_get, \\\n". \
+		  format(indent * 3, module_use_name, register_name))
+		out_stream.write("{0}project.{1}.{2}_set, \\\n". \
+		  format(indent * 3, module_use_name, register_name))
+		out_stream.write("{0}self.{1}_button, \\\n". \
+		  format(indent * 3, module_use_name))
+		out_stream.write("{0}self.{1}_entry)\n". \
+		  format(indent * 3, module_use_name))
+
+		# Improve the formatting with an extra line:
+		out_stream.write("\n")
+		row += 1
+
+	out_stream.write("\n")
+
+	# Output:
+	#        def register_click(self, name):
+	#	   data = self.registers[name]
+	#	   set_function = data[1]
+	#          entry = data[3]
+	#          try:
+	#            value = int(entry.get())
+	#            set_function(value)
+	#          except ValueError:
+	#	     print "Bad value"
+	out_stream.write("{0}def register_click(self, name):\n". \
+	  format(indent * 1))
+	out_stream.write("{0}data = self.registers[name]\n".format(indent * 2))
+	out_stream.write("{0}set_function = data[1]\n".format(indent * 2))
+	out_stream.write("{0}entry = data[3]\n".format(indent * 2))
+	out_stream.write("{0}try:\n".format(indent * 2))
+	out_stream.write("{0}value = int(entry.get())\n".format(indent * 3))
+	out_stream.write("{0}set_function(value)\n".format(indent * 3))
+	out_stream.write("{0}except ValueError:\n".format(indent * 2))
+	out_stream.write("{0}print \"Bad value\"\n".format(indent * 3))
+	out_stream.write("\n")
+
+	# Output:
+	#        def registers_read_click(self):
+	#          registers = self.registers
+	#          for register_name in self.registers:
+	#            data = registers[register_name]
+	#            get_function = data[0]
+	#            entry = data[3]
+	#            value = get_function()
+	#	     entry.delete(0, END)
+	#            entry.insert(0, str(value))
+	out_stream.write("{0}def registers_read_click(self):\n". \
+	  format(indent * 1))
+	out_stream.write("{0}registers = self.registers\n".format(indent * 2))
+        out_stream.write("{0}for register_name in registers.keys():\n". \
+	  format(indent * 2))
+        out_stream.write("{0}data = registers[register_name]\n".
+	  format(indent * 3))
+        out_stream.write("{0}get_function = data[0]\n".format(indent * 3))
+        out_stream.write("{0}entry = data[3]\n".format(indent * 3))
+        out_stream.write("{0}value = get_function()\n".format(indent * 3))
+	out_stream.write("{0}entry.delete(0, END)\n".format(indent * 3))
+        out_stream.write("{0}entry.insert(0, str(value))\n".format(indent * 3))
+
+	out_stream.write("\n")
+
+	# Output:
+	#        if __name == "__main":
+	#          application = Application()
+	#          applicaiton.mainloop()
+	out_stream.write("if __name__ == \"__main__\":\n")
+	out_stream.write("{0}application = Application()\n".format(indent * 1))
+	out_stream.write("{0}application.mainloop()\n".format(indent * 1))
+
+	# Close the Python output stream:
+	out_stream.close()
+
+	# Set the execute bit:
+	file_mode = os.stat(python_file_name).st_mode
+	print "file_mode before'{0:x}'".format(file_mode)
+	file_mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+	print "file_mode after='{0:x}'".format(file_mode)
+	os.chmod(python_file_name, file_mode)
+
 
     ## @brief Delete the *index*'th sub node from *self
     #  @param self *Project* to delete sub node from
@@ -2414,8 +2726,8 @@ class Register(Node):
 	  format(style, number + 1))
 
 	# Output: "self.request_TYPE_put(REGISTER)"
-	out_stream.write("{0:i}self.response_{1}_set({2:n})\n". \
-	      format(style, type.lower(), self))
+	out_stream.write("{0:i}self.request_{1}_put({2:n})\n". \
+	  format(style, type.lower(), self))
 
 	# Output: "self.request_end()"
 	out_stream.write("{0:i}self.request_end()\n\n".format(style))

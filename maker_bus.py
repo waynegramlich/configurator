@@ -395,12 +395,17 @@ class Maker_Bus_Base:
 class Maker_Bus_Module:
     """ This represents a single module on the bus: """
 
-    def __init__(self, maker_bus_base, address):
+    def __init__(self, maker_bus_base, address, offset):
 	""" {Maker_Bus_Module}: Initialize {self} to contain {maker_bus_base}
 	    and {address}."""
 
+	assert isinstance(maker_bus_base, Maker_Bus_Base)
+	assert isinstance(address, int)
+	assert isinstance(offset, int)
+
 	self.maker_bus_base = maker_bus_base
 	self.address = address
+	self.offset = offset
 
     def auto_flush_set(self, flush_mode):
 	""" {Maker_Bus_Module}:  This routine will set the auto flush mode for
@@ -421,7 +426,7 @@ class Maker_Bus_Module:
     def request_begin(self, command):
 	""" """
 
-	self.maker_bus_base.request_begin(self.address, command)
+	self.maker_bus_base.request_begin(self.address, self.offset + command)
 
     def request_character_put(self, character):
 	""" """
@@ -484,4 +489,3 @@ class Maker_Bus_Module:
 	""" """
 
 	self.maker_bus_base.response_end()
-

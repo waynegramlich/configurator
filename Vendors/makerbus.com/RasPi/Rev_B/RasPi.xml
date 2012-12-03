@@ -1,7 +1,8 @@
-<Module Name="RasPi" Vendor="makerbus.com"
+<Module Name="RasPi" Vendor="makerbus.com" Generate="Python"
  Brief="Bridge between Raspbery Pi and MakerBus">
   <Overview>
-    more here.
+    The RasPi module connects between the General Purpose I/O pins
+    of a Raspberry Pi computer board and a MakerBus connector.
   </Overview>
   <Connector Name="N2" Bus="Maker_Bus" Physical_Connector="2x5_2.54mm" />
   <Connector Name="Shield" Bus="Shield" Physical_Connector="Arduino30" />

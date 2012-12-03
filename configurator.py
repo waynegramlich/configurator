@@ -134,7 +134,6 @@ class Application(Frame):
 	# Open the serial port:
 	device = "/dev/ttyUSB0"
 	baud = 115200
-
 	try:
             # Give 
 	    serial = Serial(device, baud)
@@ -151,6 +150,8 @@ class Application(Frame):
 
 	# Remember whether or not we succeeded with the connection:
 	self.maker_bus_base = maker_bus_base
+
+
 
     def address_entry_changed(self, string_variable):
 	""" Application: This method is called when the address entry
@@ -344,16 +345,13 @@ class Application(Frame):
 	  "Project is modified, need to save first")
 
 	# Deal with [Generate] button:
-	generate = False
-	is_module_use = isinstance(project_selected_node, Module_Use)
-	if is_module_use:
-	    module_key = \
-	      (project_selected_node.vendor, project_selected_node.module_name)
-	    #print "module_key=", module_key
-	    if module_key in modules_table:
-                module = modules_table[module_key]
-		generate = module.generate
-	self.button_highlight(self.generate_button, generate,
+	generate = ""
+	if isinstance(project_selected_node, Module_Use):
+	    module_use = project_selected_node
+	    module = module_use.module_lookup(self.modules_table)
+	    assert isinstance(module, Module)
+	    generate = module.generate
+	self.button_highlight(self.generate_button, generate != "",
 	  "Can not generate code for this module")
 
 	#print "<=Application.buttons_update(*)"
@@ -613,16 +611,30 @@ class Application(Frame):
 	    assert isinstance(project_selected_node, Module_Use)
 	    root_module_use = project_selected_node
 
-	    name = project_selected_node.name
-	    sketch_generator = Sketch_Generator(name,
-	      self.modules_table, self.style)
+	    root_module = root_module_use.module_lookup(self.modules_table)
+	    assert isinstance(root_module, Module)
 
-	    root_module_use.sketch_generate(sketch_generator, 0)
+	    generate = root_module.generate
+	    if generate == "Ino_Slave":
+		name = project_selected_node.name
+		sketch_generator = Sketch_Generator(name,
+		  self.modules_table, self.style)
 
-	    offsets_modified = sketch_generator.write(root_module_use)
-	    if offsets_modified:
-		self.project_modified = True
-		self.buttons_update()
+		root_module_use.sketch_generate(sketch_generator, 0)
+
+		offsets_modified = \
+		  sketch_generator.ino_slave_write(root_module_use)
+		if offsets_modified:
+		    self.project_modified = True
+		    self.buttons_update()
+	    elif generate == "Python":
+		project = self.project_root_node
+		assert isinstance(project, Project)
+		project.python_write(self.modules_table)
+	    else:
+		assert False, \
+		  "Unrecognized Generate attribute '{0}'".format(generate)
+
 	    #print "off_mod={0} pro_mod={1}". \
 	    #  format(offsets_modified, self.project_modified)
 	else:
@@ -751,7 +763,7 @@ class Application(Frame):
             if maker_bus_module == None:
 		# Not cached; create it and cache it:
 		maker_bus_module = Maker_Bus_Module(self.maker_bus_base,
-		  int(current_module_use.address))
+		  int(current_module_use.address), 0)
 		current_module_use.maker_bus_module = maker_bus_module
 
 	# Have we found the desired *target_module_use*:
