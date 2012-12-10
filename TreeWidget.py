@@ -23,7 +23,11 @@
 # - optimize tree redraw after expand of subnode
 
 import os
-from Tkinter import *
+import sys
+if sys.version_info >= (3, 0):
+    from tkinter import *
+else:
+    from Tkinter import *
 import imp
 
 from idlelib import ZoomHeight
@@ -39,7 +43,8 @@ except NameError:
 if os.path.isdir(_icondir):
     ICONDIR = _icondir
 elif not os.path.isdir(ICONDIR):
-    raise RuntimeError, "can't find icon directory (%r)" % (ICONDIR,)
+    #raise RuntimeError, "can't find icon directory (%r)" % (ICONDIR,)
+    assert False
 
 def listicons(icondir=ICONDIR):
     """Utility to display the available icons."""
@@ -84,148 +89,148 @@ class TreeNode:
         self.iconimages = {} # cache of PhotoImage instances for icons
 
     def show(self, level):
-	""" TreeNode: Recursively print out *self* indented by *level*. """
+        """ TreeNode: Recursively print out *self* indented by *level*. """
 
-	print "{0}TreeNode: item={1}  state={2} selected={3} expandable={4}". \
-	  format("  " * level, self.item.label, self.state, self.selected,
-	  self.item.expandable)
-	children = self.children
-	if children != None:
-	    for child in children:
-		child.show(level + 1)
+        print("{0}TreeNode: item={1}  state={2} selected={3} expandable={4}". \
+          format("  " * level, self.item.label, self.state, self.selected,
+          self.item.expandable))
+        children = self.children
+        if children != None:
+            for child in children:
+                child.show(level + 1)
 
     def node_find(self, item):
-	""" TreeNode: Recursively search for the *TreeNode* associated
-	    with *item*.  *None* is returned if not nothing is found. """
+        """ TreeNode: Recursively search for the *TreeNode* associated
+            with *item*.  *None* is returned if not nothing is found. """
 
-	#print "=>TreeNode.node_find({0}, {1})". \
-	#  format(self.item.label, item.label)
+        #print "=>TreeNode.node_find({0}, {1})". \
+        #  format(self.item.label, item.label)
 
-	# Check argument types:
-	assert isinstance(item, TreeItem)
+        # Check argument types:
+        assert isinstance(item, TreeItem)
 
-	# Search through children:
-	result = None
-	if self.item == item:
-	    # Found *item* at this level:
-	    result = self
-	else:
-	    # Search for *item* recursively:
-	    children = self.children
-	    for sub_node in children:
-		find_match = sub_node.node_find(item)
-		if find_match != None:
-		    # We found *item* further down:
-		    result = find_match
-		    break
-	
-	#result_text = "None"
-	#if result != None:
-	#    result_text = result.item.label
-	#print "<=TreeNode.node_find({0}, {1})=>{2}". \
-	#  format(self.item.label, item.label, result_text)
+        # Search through children:
+        result = None
+        if self.item == item:
+            # Found *item* at this level:
+            result = self
+        else:
+            # Search for *item* recursively:
+            children = self.children
+            for sub_node in children:
+                find_match = sub_node.node_find(item)
+                if find_match != None:
+                    # We found *item* further down:
+                    result = find_match
+                    break
+        
+        #result_text = "None"
+        #if result != None:
+        #    result_text = result.item.label
+        #print "<=TreeNode.node_find({0}, {1})=>{2}". \
+        #  format(self.item.label, item.label, result_text)
 
-	return result
+        return result
 
     def parent_index_find(self, item):
-	""" TreeNode: Recursively search for the parent *TreeNode*
-	    object of *item* and return both its associated *TreeNode*
-	    object and the index of its children list for *item*.
-	    (*None*, -1) is returned if nothing is found. """
+        """ TreeNode: Recursively search for the parent *TreeNode*
+            object of *item* and return both its associated *TreeNode*
+            object and the index of its children list for *item*.
+            (*None*, -1) is returned if nothing is found. """
 
-	# Check argument types:
-	assert isinstance(item, TreeItem)
+        # Check argument types:
+        assert isinstance(item, TreeItem)
 
-	#print "=>TreeNode.parent_index_find match({0}, {1})". \
-	#  format(self.item.label, item.label)
+        #print "=>TreeNode.parent_index_find match({0}, {1})". \
+        #  format(self.item.label, item.label)
 
-	# Search through children:
-	result_node = None
-	result_index = -1
+        # Search through children:
+        result_node = None
+        result_index = -1
 
-	# Iterate across *children*:
-	children = self.children
-	for index in range(len(children)):
-	    child_node = children[index]
-	    if child_node.item == item:
-		result_node = self
-		result_index = index
-		break
+        # Iterate across *children*:
+        children = self.children
+        for index in range(len(children)):
+            child_node = children[index]
+            if child_node.item == item:
+                result_node = self
+                result_index = index
+                break
 
-	    # Recursively try children of *sub_node*:
+            # Recursively try children of *sub_node*:
             sub_node, sub_index = child_node.parent_index_find(item)
-	    if sub_node != None:
-		result_node = sub_node
-		result_index = sub_index
-		break
+            if sub_node != None:
+                result_node = sub_node
+                result_index = sub_index
+                break
 
-	# Nope, nothing found:
-	#result_text = "None"
-	#if result_node != None:
-	#    result_text = result_node.item.label
-	#print "<=TreeNode.parent_index_find match({0}, {1}) => {2}, {3}". \
-	#  format(self.item.label, item.label, result_text, result_index)
+        # Nope, nothing found:
+        #result_text = "None"
+        #if result_node != None:
+        #    result_text = result_node.item.label
+        #print "<=TreeNode.parent_index_find match({0}, {1}) => {2}, {3}". \
+        #  format(self.item.label, item.label, result_text, result_index)
 
-	return result_node, result_index
+        return result_node, result_index
 
     def child_append(self, new_item):
-	""" TreeNode: Append *new_item* to the children of *self*. """
+        """ TreeNode: Append *new_item* to the children of *self*. """
 
-	# Check argument types:
-	assert isinstance(new_item, TreeItem)
-
-	new_node = self.__class__(self.canvas, self, new_item)
-
-	# Make sure that *children* exists:
-	children = self.children
-	if children == None:
-	    children = []
-	    self.children = children
-
-	# Now perform the append:
-	children.append(new_node)
-
-	# Mark this node as expanded:
-	self.state = 'expanded'
-
-    def item_delete(self, index):
-	""" TreeNode: Delete *TreeItem* from *index*'th slot of *self*. """
-
-	# Check argument types:
-	assert isinstance(index, int)
-
-	#print "Tree_Node.item_delete({0}, {1}):expandable={2}". \
-	#  format(self.item.label, index, self.item.expandable)
-
-	children = self.children
-	assert children != None
-	assert index <= len(children)
-	del children[index]
-
-	if len(children) == 0:
-	    self.state = 'collapsed'
-	    self.item.expandable = False
-
-    def item_insert(self, index, new_item):
-	""" TreeNode: Insert *item* into the children of *self* at *index*. """
-
-	# Check argument types:
-	assert isinstance(index, int)
-	assert isinstance(new_item, TreeItem)
-
-	#print "TreeNode.item_insert({0}, {1}, {2})". \
-	#  format(self.item.label, index, new_item.label)
+        # Check argument types:
+        assert isinstance(new_item, TreeItem)
 
         new_node = self.__class__(self.canvas, self, new_item)
 
-	children = self.children
-	if children == None:
-	    # We can only insert at 0:
-	    assert index == 0
+        # Make sure that *children* exists:
+        children = self.children
+        if children == None:
+            children = []
+            self.children = children
+
+        # Now perform the append:
+        children.append(new_node)
+
+        # Mark this node as expanded:
+        self.state = 'expanded'
+
+    def item_delete(self, index):
+        """ TreeNode: Delete *TreeItem* from *index*'th slot of *self*. """
+
+        # Check argument types:
+        assert isinstance(index, int)
+
+        #print "Tree_Node.item_delete({0}, {1}):expandable={2}". \
+        #  format(self.item.label, index, self.item.expandable)
+
+        children = self.children
+        assert children != None
+        assert index <= len(children)
+        del children[index]
+
+        if len(children) == 0:
+            self.state = 'collapsed'
+            self.item.expandable = False
+
+    def item_insert(self, index, new_item):
+        """ TreeNode: Insert *item* into the children of *self* at *index*. """
+
+        # Check argument types:
+        assert isinstance(index, int)
+        assert isinstance(new_item, TreeItem)
+
+        #print "TreeNode.item_insert({0}, {1}, {2})". \
+        #  format(self.item.label, index, new_item.label)
+
+        new_node = self.__class__(self.canvas, self, new_item)
+
+        children = self.children
+        if children == None:
+            # We can only insert at 0:
+            assert index == 0
             self.children = [ new_node ]
-	else:
-	    assert index <= len(children)
-	    children.insert(index, new_node)
+        else:
+            assert index <= len(children)
+            children.insert(index, new_node)
 
     def destroy(self):
         for c in self.children[:]:
@@ -253,7 +258,7 @@ class TreeNode:
         self.canvas.delete(self.image_id)
         self.drawicon()
         self.drawtext()
-	self.item.OnSelect()
+        self.item.OnSelect()
 
     def deselect(self, event=None):
         if not self.selected:
@@ -481,54 +486,54 @@ class TreeItem:
         """Constructor.  Do whatever you need to do."""
 
     def delete(self, root_tree_node):
-	""" TreeNode: Delete *self* from the tree rooted at
-	    *root_tree_node*.  Do not ovrerride this mehod. """
+        """ TreeNode: Delete *self* from the tree rooted at
+            *root_tree_node*.  Do not ovrerride this mehod. """
 
-	# Check argument types:
-	assert isinstance(root_tree_node, TreeNode)
+        # Check argument types:
+        assert isinstance(root_tree_node, TreeNode)
 
-	parent_node, index = root_tree_node.parent_index_find(self)
-	assert parent_node != None
-	parent_node.item_delete(index)
+        parent_node, index = root_tree_node.parent_index_find(self)
+        assert parent_node != None
+        parent_node.item_delete(index)
 
     def prepend(self, new_item, root_tree_node):
-	""" TreeNode: Prepend *new_item* to *self* using *root_tree_node*
-	    as the root of the entire tree.  Do not override this method. """
+        """ TreeNode: Prepend *new_item* to *self* using *root_tree_node*
+            as the root of the entire tree.  Do not override this method. """
 
-	# Check argument types:
-	assert isinstance(new_item, TreeItem)
-	assert isinstance(root_tree_node, TreeNode)
+        # Check argument types:
+        assert isinstance(new_item, TreeItem)
+        assert isinstance(root_tree_node, TreeNode)
 
-	parent_node, index = root_tree_node.parent_index_find(self)
-	assert parent_node != None
-	parent_node.item_insert(index, new_item)
+        parent_node, index = root_tree_node.parent_index_find(self)
+        assert parent_node != None
+        parent_node.item_insert(index, new_item)
 
     def append(self, new_item, root_tree_node):
-	""" TreeNode: Append *new_item* to *self* using *root_tree_node*
-	    as the root of the entire tree.  Do no override this method. """
+        """ TreeNode: Append *new_item* to *self* using *root_tree_node*
+            as the root of the entire tree.  Do no override this method. """
 
-	# Check argument types:
-	assert isinstance(new_item, TreeItem)
-	assert isinstance(root_tree_node, TreeNode)
+        # Check argument types:
+        assert isinstance(new_item, TreeItem)
+        assert isinstance(root_tree_node, TreeNode)
 
-	parent_node, index = root_tree_node.parent_index_find(self)
-	assert parent_node != None
-	parent_node.item_insert(index + 1, new_item)
+        parent_node, index = root_tree_node.parent_index_find(self)
+        assert parent_node != None
+        parent_node.item_insert(index + 1, new_item)
 
     def child_append(self, item, root_tree_node):
-	""" TreeNode: Append *item* to the children of *self*.
-	    *root_tree_node* is needed to find the *TreeNode*
-	    associated with *self*. """
+        """ TreeNode: Append *item* to the children of *self*.
+            *root_tree_node* is needed to find the *TreeNode*
+            associated with *self*. """
 
-	# Check argument types:
-	assert isinstance(item, TreeItem)
-	assert isinstance(root_tree_node, TreeNode)
+        # Check argument types:
+        assert isinstance(item, TreeItem)
+        assert isinstance(root_tree_node, TreeNode)
 
-	# Find the *tree_node* associated with *self*.
-	node = root_tree_node.node_find(self)
-	assert node != None
-	xxx
-	node.child_append(item)
+        # Find the *tree_node* associated with *self*.
+        node = root_tree_node.node_find(self)
+        assert node != None
+        xxx
+        node.child_append(item)
 
     def GetText(self):
         """Return text string to display."""
@@ -573,7 +578,7 @@ class TreeItem:
         """Return list of items forming sublist."""
 
     def OnSelect(self):
-	"""Called when item is selected."""
+        """Called when item is selected."""
 
     def OnDoubleClick(self):
         """Called on a double-click on the item."""
