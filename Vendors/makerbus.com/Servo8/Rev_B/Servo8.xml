@@ -1,0 +1,60 @@
+<Module Name="Servo8" Vendor="makerbus.com" Generate="Python"
+ Brief="Servo controller for 8 hobby servos">
+  <Overview>
+    The Servo8 module can drive up to 8 hobby servos.
+  </Overview>
+  <Connector Name="N2" Bus="Maker_Bus" Physical_Connector="2x5_2.54mm" />
+  <Connector Name="Shield" Bus="Shield" Physical_Connector="Arduino30" />
+  <Classification Level1="Vendors" Level2="makerbus.com" Level3="Actuators" />
+  <Classification Level1="Buses" Level2="MakerBus" />
+  <Classification Level1="Buses" Level2="Servo" />
+  <Classification Level1="Catagories" Level2="Actuators" Level3="Servo" />
+  <Register Name="width0" Type="UShort" Number="0"
+   Brief="Set position of servo 0">
+    <Description>
+      This register specifies the pulse width for servo 0.
+    </Description>
+  </Register>
+  <Register Name="width1" Type="UShort" Number="2"
+   Brief="Set position of servo 1">
+    <Description>
+      This register specifies the pulse width for servo 0.
+    </Description>
+  </Register>
+  <Register Name="width2" Type="UShort" Number="4"
+   Brief="Set position of servo 2">
+    <Description>
+      This register specifies the pulse width for servo 2.
+    </Description>
+  </Register>
+  <Register Name="width3" Type="UShort" Number="6"
+   Brief="Set position of servo 3">
+    <Description>
+      This register specifies the pulse width for servo 3.
+    </Description>
+  </Register>
+  <Register Name="width4" Type="UShort" Number="8"
+   Brief="Set position of servo 8">
+    <Description>
+      This register specifies the pulse width for servo 4.
+    </Description>
+  </Register>
+  <Register Name="width5" Type="UShort" Number="10"
+   Brief="Set position of servo 10">
+    <Description>
+      This register specifies the pulse width for servo 5.
+    </Description>
+  </Register>
+  <Register Name="width6" Type="UShort" Number="12"
+   Brief="Set position of servo 6">
+    <Description>
+      This register specifies the pulse width for servo 6.
+    </Description>
+  </Register>
+  <Register Name="width7" Type="UShort" Number="14"
+   Brief="Set position of servo 0">
+    <Description>
+      This register specifies the pulse width for servo 7.
+    </Description>
+  </Register>
+</Module>

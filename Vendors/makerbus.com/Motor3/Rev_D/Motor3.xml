@@ -1,0 +1,22 @@
+<Module Name="Motor3" Vendor="makerbus.com" Generate="Python"
+ Address_RE="^[0-9]+$" Address_Type="MakerBus"
+ Brief="Motor controller">
+  <Overview>
+    The Motor3 controller can supply up 3.5A@40V to a motor.
+  </Overview>
+  <Classification Level1="Vendors" Level2="makerbus.com" Level3="Actuators" />
+  <Classification Level1="Buses" Level2="MakerBus" />
+  <Classification Level1="Catagories" Level2="Actuators" Level3="Motor" />
+  <Register Name="speed" Type="Byte" Number="0"
+   Brief="Motor speed">
+    <Description>
+      This register specifies the motor speed.
+    </Description>
+  </Register>
+  <Register Name="direction_invert" Type="Logical" Number="2"
+   Brief="Invert motor direction">
+    <Description>
+      This register specifies the motor direction sign.
+    </Description>
+  </Register>
+</Module>

@@ -127,11 +127,11 @@ class Maker_Bus_Base:
                 checksum = (checksum + (checksum >>4)) & 0xf
 
                 if trace:
-                    print("{0}response={1}, checksum={2:x}". \
+                    print("{0}response={1}, checksum=0x{2:x}". \
                       format(trace_pad, response, checksum))
 
                 if checksum != response_checksum:
-                    print("Got checksum of {0:x} instead of {1:x}". \
+                    print("Got checksum of 0x{0:x} instead of 0x{1:x}". \
                       format(checksum, response_checksum))
                     del response[:]
 
@@ -139,6 +139,31 @@ class Maker_Bus_Base:
             self.trace_pad = trace_pad
             print("{0}<=Maker_Bus.flush() response={1}". \
               format(trace_pad, self.response))
+
+    def bus_reset(self):
+	""" Maker_Bus_Base: Reset the bus. """
+
+	trace = self.trace
+	if trace:
+	    print("=>bus_reset()")
+
+	# Shove a 0xc5 out there to force a bus reset:
+	serial = self.serial
+	serial.write(chr(0xc5))
+	serial.flush()
+
+	# Wait for a response:
+	byte = serial.read(1)
+	if len(byte) == 0:
+	    print("Bus reset failed with no response")
+	elif ord(byte) != 0xa5:
+	    print("Bus reset failed 0x{0:x}".format(ord(byte)))
+	else:
+	    if trace:
+		print("Bus reset succeeded")
+
+	if trace:
+	    print("<=bus_reset()")
 
     def discovery_mode(self):
         """ Maker_Bus_Base: Perform discovery mode """
@@ -200,7 +225,8 @@ class Maker_Bus_Base:
 
         if trace:
             self.trace_pad = trace_pad
-            print("{0}<=Maker_Bus.frame_get()=>{1:x}".format(trace_pad, frame))
+            print("{0}<=Maker_Bus.frame_get()=>0x{1:x}". \
+	      format(trace_pad, frame))
         return frame
 
     def frame_put(self, frame):
@@ -210,10 +236,10 @@ class Maker_Bus_Base:
         if trace:
             trace_pad = self.trace_pad
             self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.frame_put({1:x})".format(trace_pad, frame))
+            print("{0}=>Maker_Bus.frame_put(0x{1:x})".format(trace_pad, frame))
 
         serial = self.serial
-        if (frame > 0xff or (0xc1 <= frame and frame <= 0xc4)):
+        if (frame > 0xff or (0xc1 <= frame and frame <= 0xc5)):
             # Send {frame} as two bytes:
             byte1 = 0xc0 | ((frame >> 7) & 3)
             byte2 = frame & 0x7f
@@ -232,7 +258,7 @@ class Maker_Bus_Base:
             
         if trace:
             self.trace_pad = trace_pad
-            print("{0}<=Maker_Bus.frame_put({1:x})".format(trace_pad, frame))
+            print("{0}<=Maker_Bus.frame_put(0x{1:x})".format(trace_pad, frame))
 
 
     def request_begin(self, address, command):
@@ -241,8 +267,8 @@ class Maker_Bus_Base:
         trace = self.trace
         if trace:
             trace_pad = self.trace_pad
-            print("{0}=>Maker_Bus.request_begin({1:x})". \
-              format(trace_pad, command))
+            print("{0}=>Maker_Bus.request_begin(0x{1:x}, 0x{2:x})". \
+              format(trace_pad, address, command))
             self.trace_pad = trace_pad + " "
 
         request = self.request
@@ -260,9 +286,14 @@ class Maker_Bus_Base:
         request.append(command)
 
         if trace:
-            print("{0}<=Maker_Bus.request_begin({1:x})". \
-              format(trace_pad, command))
+            print("{0}<=Maker_Bus.request_begin(0x{1:x}, 0x{2:x})". \
+              format(trace_pad, address, command))
             self.trace_pad = trace_pad
+
+    def request_byte_put(self, byte):
+        """ {Maker_Bus}: Append {byte} to current request in {self}. """
+
+	self.request_ubyte_put(self, byte & 0xff);
 
     def request_end(self):
         """ Maker_Bus: Indicate that current command is complete. """
@@ -293,7 +324,7 @@ class Maker_Bus_Base:
         if trace:
             trace_pad = self.trace_pad
             self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.request_ubyte_get({0})". \
+            print("{0}=>Maker_Bus.request_ubyte_put({0})". \
               format(trace_pad, ubyte))
 
         request = self.request
@@ -301,7 +332,7 @@ class Maker_Bus_Base:
 
         if trace:
             self.trace_pad = trace_pad
-            print("{0}<=Maker_Bus.request_ubyte_get({1}) request={2}". \
+            print("{0}<=Maker_Bus.request_ubyte_put({1}) request={2}". \
               format(trace_pad, ubyte, request))
 
     def response_begin(self):
@@ -319,6 +350,14 @@ class Maker_Bus_Base:
         if trace:
             print("{0}<=Maker_Bus.response_begin()".format(trace_pad))
             self.trace_pad = trace_pad
+
+    def response_byte_get(self):
+        """ {Maker_Bus}: Return next unsigned byte from response in {self}. """
+
+	ubyte = self.response_ubyte_get()
+	if ubyte & 0x80 != 0:
+	    ubyte |= 0xffffff00
+	return ubyte
 
     def response_end(self):
         """ {Maker_Bus}: End a response sequence. """
@@ -426,22 +465,27 @@ class Maker_Bus_Module:
         self.maker_bus_base.flush()
 
     def request_begin(self, command):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.request_begin(self.address, self.offset + command)
 
+    def request_byte_put(self, byte):
+	""" {Maker_Bus_Module}: """
+
+        self.maker_bus_base.request_ubyte_put(byte & 0xff)
+
     def request_character_put(self, character):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.request_ubyte_put(ord(character))
 
     def request_end(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.request_end()
 
     def request_logical_put(self, logical):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         value = 0
         if logical:
@@ -449,45 +493,50 @@ class Maker_Bus_Module:
         self.maker_bus_base.request_ubyte_put(value)
 
     def request_ubyte_put(self, ubyte):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.request_ubyte_put(ubyte & 0xff)
 
     def request_ushort_put(self, ushort):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         # High byte first, followed by low byte:
         self.request_ubyte_put(ushort >> 8)
         self.request_ubyte_put(ushort)
 
     def response_begin(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.response_begin()
 
+    def response_byte_get(self):
+	""" {Maker_Bus_Module}: """
+
+        return self.maker_bus_base.response_byte_get()
+
     def response_character_get(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         return chr(self.maker_bus_base.response_ubyte_get())
 
     def response_logical_get(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         return self.maker_bus_base.response_ubyte_get() != 0
 
     def response_ubyte_get(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         return self.maker_bus_base.response_ubyte_get()
 
     def response_ushort_get(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         high_byte = self.response_ubyte_get()
         low_byte = self.response_ubyte_get()
         return (high_byte << 8) | low_byte
 
     def response_end(self):
-        """ """
+	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.response_end()

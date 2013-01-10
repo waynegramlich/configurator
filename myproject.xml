@@ -50,6 +50,10 @@
            Vendor="ghielectronics.com" Module="Gadgeteer Joystick" />
         </Module_Use>
       </Module_Use>
+      <Module_Use Name="Servo8" Address="132" Offset="0" UID=""
+       Vendor="makerbus.com" Module="Servo8" />
+      <Module_Use Name="Motor3" Address="133" Offset="0" UID=""
+       Vendor="makerbus.com" Module="Motor3" />
     </Module_Use>
   </Module_Use>
 </Project>

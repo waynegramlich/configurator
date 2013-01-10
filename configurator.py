@@ -25,23 +25,23 @@
 # structures.  Thus, someone who wanted to implement a user interface
 # in wxPython would be able to do so without too much difficulty.
 
-import glob                  # File wild card matching module
-import os                # Operatin system utilities
+import glob                   # File wild card matching module
+import os                     # Operatin system utilities
 import sys
 print("sys.version_info=", sys.version_info)
 if sys.version_info >= (3, 0):
-    from tkinter import *        # Graphic User Interface took based ont Tcl/Tk
+    from tkinter import *     # Graphic User Interface took based ont Tcl/Tk
     import tkinter.filedialog
     ask_open_file_name = tkinter.filedialog.askopenfilename
 else:
     from Tkinter import *
-    import tkFileDialog        # Import a file dialog box
+    import tkFileDialog       # Import a file dialog box
     ask_open_file_name = tkFileDialog.askopenfilename
 from TreeWidget import TreeItem, TreeNode        # Tree widget for UI
 
-from serial import *        # Serial communications package
-from data_structures import *        # Data structures configurator
-from maker_bus import *        # Serial to MakerBus routines
+from serial import *          # Serial communications package
+from data_structures import * # Data structures configurator
+from maker_bus import *       # Serial to MakerBus routines
 
 ## @class Application
 #
@@ -64,20 +64,20 @@ class Application(Frame):
 
         # Read the data in:
         style = Style(self)
-        self.maker_bus_base = None          # MakerBus base object
-        self.project_file_name = None          # Project file name to read/write
-        self.project_modified = False          # *True* => project tree modified
-        self.project_root_item = None          # Root project *TreeItem* tree
-        self.project_root_node = None          # Root project *Node* tree
-        self.project_root_tree = None          # Root project *TreeNode* tree
-        self.project_selected_item = None # Current selected project *TreeItem*
-        self.register_or_function = None  # Current registor or function
+        self.maker_bus_base = None           # MakerBus base object
+        self.project_file_name = None        # Project file name to read/write
+        self.project_modified = False        # *True* => project tree modified
+        self.project_root_item = None        # Root project *TreeItem* tree
+        self.project_root_node = None        # Root project *Node* tree
+        self.project_root_tree = None        # Root project *TreeNode* tree
+        self.project_selected_item = None    # Current selected proj. *TreeItem*
+        self.register_or_function = None     # Current registor or function
         self.selected_module = None          # Currently selected *Module*
         self.selections_selected_item = None # Current selected sels. *TreeItem*
-        self.selections_root_item = None  # Root selections *Node* tree
-        self.selections_root_node = None  # Root selections *Node* tree
-        self.selections_root_tree = None  # Root selections *TreeNode* tree
-        self.style = style                  # Code generation style object
+        self.selections_root_item = None     # Root selections *Node* tree
+        self.selections_root_node = None     # Root selections *Node* tree
+        self.selections_root_tree = None     # Root selections *TreeNode* tree
+        self.style = style                   # Code generation style object
 
         self.tags = XML_Check.tags_initialize()
         self.xml = XML(style)
@@ -495,24 +495,29 @@ class Application(Frame):
                       format(parameters_length), number_arguments_length)
             else:
                 # Special function:
+                maker_bus_base = self.maker_bus_base
+
+		# Dispatch on *function_number*:
                 if function_number == -1:
                     # Reset
-                    pass
+		    print("=>bus_reset")
+		    maker_bus_base.bus_reset()
+		    print("<=bus_reset")
                 elif function_number == -2:
                     # Bus_Scan:
 
                     # Get the *Maker_Bus_Module* to use:
-                    maker_bus_module = self.maker_bus_module_get(module_use)
+                    maker_bus_base = self.maker_bus_base
+		    assert maker_bus_base != None
                         
                     # Perform the bus scan:
-                    maker_bus_module = module_use.maker_bus_module
-                    maker_bus_base = maker_bus_module.maker_bus_base
                     ids = maker_bus_base.discovery_mode()
                     print("bus_scan=", ids)
                 elif function_number == -3:
                     # Upload all
                     pass
-                #print "function_number={0}".format(function_number)
+		else:
+                    assert False, "function_number={0}".format(function_number)
         else:
             self.warn(why_not)
 
@@ -672,7 +677,9 @@ class Application(Frame):
             maker_bus_module.request_begin(module_use.offset + number)
             maker_bus_module.request_end()
             result = 0
-            if type == "Logical":
+            if type == "Byte":
+                result = maker_bus_module.response_byte_get()
+            elif type == "Logical":
                 result = int(maker_bus_module.response_logical_get())
             elif type == "UByte":
                 result = maker_bus_module.response_ubyte_get()
@@ -709,8 +716,8 @@ class Application(Frame):
         """ Application: This method will return the *Maker_Bus_Module* to
             use to access *module_use*. """
 
-        #print "=>Application.maker_bus_module_get(*, '{0}')". \
-        #  format(target_module_use.name)
+        print("=>Application.maker_bus_module_get(*, '{0}')". \
+          format(target_module_use.name))
 
         # Check arguemnt types:
         assert isinstance(target_module_use, Module_Use)
@@ -737,8 +744,8 @@ class Application(Frame):
                     target_module_use.maker_bus_module = maker_bus_module
                     break
 
-        #print "=>Application.maker_bus_module_get(*, '{0}') => {1}". \
-        #  format(target_module_use.name, maker_bus_module != None)
+        print("=>Application.maker_bus_module_get(*, '{0}') => {1}". \
+          format(target_module_use.name, maker_bus_module != None))
 
         assert maker_bus_module != None
 
@@ -1053,7 +1060,9 @@ class Application(Frame):
             if set_entry_text.isdigit():
                 value = int(set_entry_text)
                 maker_bus_module.request_begin(module_use.offset + number + 1)
-                if type == "Logical":
+                if type == "Byte":
+                    result = maker_bus_module.request_byte_put(value)
+                elif type == "Logical":
                     result = maker_bus_module.request_logical_put(value)
                 elif type == "UByte":
                     result = maker_bus_module.request_ubyte_put(value)
