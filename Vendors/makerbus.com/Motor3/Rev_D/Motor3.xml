@@ -19,10 +19,16 @@
       This register specifies the motor direction sign.
     </Description>
   </Register>
-  <Register Name="encoder" Type="UByte" Number="4"
+  <Register Name="encoder8" Type="Byte" Number="4"
+   Brief="8-bit Motor encoder">
+    <Description>
+      This register specifies the 8-bit motor encoder.
+    </Description>
+  </Register>
+  <Register Name="encoder" Type="Int" Number="6"
    Brief="Motor encoder">
     <Description>
-      This register specifies the motor encoder.
+      This register specifies the 32-bit motor encoder.
     </Description>
   </Register>
 </Module>

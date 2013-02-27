@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 ## @mainpage Configurator
 #
 # The configurator program provides a graphical user interface for
@@ -459,8 +460,18 @@ class Application(Frame):
                             maker_bus_module.request_character_put(chr(number))
                         elif type == "Logical":
                             maker_bus_module.request_logical_put(number)
+                        elif type == "Byte":
+                            maker_bus_module.request_byte_put(number)
+                        elif type == "Short":
+                            maker_bus_module.request_short_put(number)
+                        elif type == "Int":
+                            maker_bus_module.request_int_put(number)
                         elif type == "UByte":
                             maker_bus_module.request_ubyte_put(number)
+                        elif type == "UShort":
+                            maker_bus_module.request_ushort_put(number)
+                        elif type == "UInt":
+                            maker_bus_module.request_uint_put(number)
                         else:
                             assert False, "Finish dispatch table"
 
@@ -478,10 +489,18 @@ class Application(Frame):
                             number = maker_bus_module.response_character_get()
                         elif type == "Logical":
                             number = maker_bus_module.response_logical_get()
+                        elif type == "Byte":
+                            number = maker_bus_module.response_byte_get()
+                        elif type == "Short":
+                            number = maker_bus_module.response_short_get()
+                        elif type == "Int":
+                            number = maker_bus_module.response_int_get()
                         elif type == "UByte":
                             number = maker_bus_module.response_ubyte_get()
                         elif type == "UShort":
                             number = maker_bus_module.response_ushort_get()
+                        elif type == "UInt":
+                            number = maker_bus_module.response_uint_get()
                         else:
                             assert False, "Finish dispatch table"
                         call_entry_text += prefix + str(number)
@@ -681,12 +700,20 @@ class Application(Frame):
                 result = maker_bus_module.response_byte_get()
             elif type == "Logical":
                 result = int(maker_bus_module.response_logical_get())
+            elif type == "Byte":
+                result = maker_bus_module.response_byte_get()
+            elif type == "Short":
+                result = maker_bus_module.response_short_get()
+            elif type == "Int":
+                result = maker_bus_module.response_int_get()
             elif type == "UByte":
                 result = maker_bus_module.response_ubyte_get()
             elif type == "UShort":
                 result = maker_bus_module.response_ushort_get()
+            elif type == "UInt":
+                result = maker_bus_module.response_uint_get()
             else:
-                assert False
+                assert False, "Type={0}".format(type)
             get_entry = self.get_entry
             get_entry.delete(0, END)
             get_entry.insert(0, "{0}".format(result))

@@ -1542,6 +1542,8 @@ class Module_Use(Node):
     ## @brief Find the MakerBus accessible modules for *self*.
     #  @param self *Module_Use* to search
     #  @param accessible_modules *dict* to store accessible modules into
+    #  @param accessible_modules_uses *dict* to accessible modules uses into
+    #  @param maker_bus_address *int* address of make_bus module (or -1))
     #
     # This method will insert *self* into *accessible_module* keyed by
     # vendor and name, if it has any registers and or functions defined
@@ -1549,13 +1551,26 @@ class Module_Use(Node):
     # as well.
 
     def accessible_modules_find(self, modules_table,
-      accessible_modules, accessible_module_uses, maker_bus_address):
+      accessible_modules, accessible_module_uses, maker_bus_address, indent):
 
+	print "{0}acc_mod_find({1}, {2}, {3})".format(" " * indent,
+	  self.name, maker_bus_address, self.address)
+
+	# See whether {self} looks like it has a {maker_bus_address}:
+        try:
+	    address = int(self.address)
+            if address >= 0:
+		maker_bus_address = address
+		self.maker_bus_address = maker_bus_address
+                print "{0}maker_bus_address={1]". \
+		  format(" " * indent, maker_bus_address)
+	except ValueError:
+	    pass
+	
         # Lookup the *Module* associated with *self*:
         module = self.module_lookup(modules_table)
 
-        # Figure out if there are the module has any accessible functions
-        # or registers:
+        # Figure out if the module has any accessible functions or registers:
         last_number = -1
         for function in module.functions:
             if function.number >= 0:
@@ -1583,7 +1598,8 @@ class Module_Use(Node):
         # Visit all sub *Module_Use*'s as well:
         for sub_module_use in self.module_uses:
             sub_module_use.accessible_modules_find(modules_table,
-              accessible_modules, accessible_module_uses, maker_bus_address)
+              accessible_modules, accessible_module_uses, maker_bus_address,
+	      indent + 1)
 
     ## @brief Generate sketch code for *self* to *out_stream*.
     #  @param self *self* *Module_Use* to generate code for
@@ -2119,6 +2135,7 @@ class Project(Node):
         name = self.name
         python_file_name = "{0}.py".format(name)
         indent = "  "
+	print "Generating {0}".format(python_file_name)
 
         # Open the Python output stream:
         out_stream = open(python_file_name, "w")
@@ -2132,12 +2149,13 @@ class Project(Node):
         out_stream.write("from serial import *\n")
         out_stream.write("\n")
 
-        # Find the accessible modules and module uses:
+        # Find the accessible modules and accessible module uses:
         accessible_modules = {}
         accessible_module_uses = {}
         for module_use in self.module_uses:
+	    print "module_use={0}".format(module_use.name)
             module_use.accessible_modules_find(modules_table,
-              accessible_modules, accessible_module_uses, 0)
+              accessible_modules, accessible_module_uses, -1, 0)
 
         # Sort the modules by name:
         accessible_modules_keys = accessible_modules.keys()
@@ -2167,10 +2185,13 @@ class Project(Node):
               accessible_module_uses[accessible_module_uses_key]
             accessible_module = \
               accessible_module_use.module_lookup(modules_table)
-            out_stream.write("{0}self.{1} = {2:t}(maker_bus, {3}, {4})\n". \
-              format(indent * 2, accessible_module_use.name, \
+	    line = "{0}self.{1} = {2:t}(maker_bus, {3}, {4})". \
+              format(indent * 2, accessible_module_use.name.lower(), \
               accessible_module, accessible_module_use.maker_bus_address,
-              accessible_module_use.offset))
+              accessible_module_use.offset)
+	    print "Project.python_write='{0}'".format(line)
+	    out_stream.write(line)
+	    out_stream.write("\n")
         out_stream.write("\n")
 
         # Output the Application class:
@@ -2262,7 +2283,7 @@ class Project(Node):
                 #      self.MODULE_USE_NAME_button.
                 #        grid(row = ROW, column = 0)
                 out_stream.write("{0}self.{1}_button = \\\n". \
-                  format(indent * 2, module_use_name))
+                  format(indent * 2, module_use_name.lower()))
                 out_stream.write( \
                   "{0}Button(self, text = \"{1}\", \\\n". \
                   format(indent * 3, button_name))
@@ -2271,7 +2292,7 @@ class Project(Node):
                 out_stream.write("{0}command = {1})\n". \
                  format(indent * 3, lambda_function))
                 out_stream.write("{0}self.{1}_button. \\\n". \
-                  format(indent * 2, module_use_name))
+                  format(indent * 2, module_use_name.lower()))
                 out_stream.write("{0}grid(row = {1}, column = 0)\n". \
                   format(indent * 3, row))
 
@@ -2281,12 +2302,12 @@ class Project(Node):
                 #         self.MODULE_USE_NAME_entry. \
                 #           grid(row = ROW, column = 1)
                 out_stream.write("{0}self.{1}_entry = \\\n". \
-                  format(indent * 2, module_use_name))
+                  format(indent * 2, module_use_name.lower()))
                 out_stream.write( \
                   "{0}Entry(self, background = \"white\")\n". \
                   format(indent * 3))
                 out_stream.write("{0}self.{1}_entry. \\\n". \
-                  format(indent * 2, module_use_name))
+                  format(indent * 2, module_use_name.lower()))
                 out_stream.write("{0}grid(row = {1}, column = 1)\n". \
                   format(indent * 3, row))
 
@@ -2298,13 +2319,13 @@ class Project(Node):
                 out_stream.write("{0}registers[\"{1}\"] = \\\n". \
                   format(indent * 2, button_name))
                 out_stream.write("{0}(project.{1}.{2}_get, \\\n". \
-                  format(indent * 3, module_use_name, register_name))
+                  format(indent * 3, module_use_name.lower(), register_name))
                 out_stream.write("{0}project.{1}.{2}_set, \\\n". \
-                  format(indent * 3, module_use_name, register_name))
+                  format(indent * 3, module_use_name.lower(), register_name))
                 out_stream.write("{0}self.{1}_button, \\\n". \
-                  format(indent * 3, module_use_name))
+                  format(indent * 3, module_use_name.lower()))
                 out_stream.write("{0}self.{1}_entry)\n". \
-                  format(indent * 3, module_use_name))
+                  format(indent * 3, module_use_name.lower()))
 
                 # Improve the formatting with an extra line:
                 out_stream.write("\n")
@@ -2349,6 +2370,8 @@ class Project(Node):
         out_stream.write("{0}registers = self.registers\n".format(indent * 2))
         out_stream.write("{0}for register_name in registers.keys():\n". \
           format(indent * 2))
+	out_stream.write("{0}print 'Read register', register_name\n". \
+	  format(indent * 3))
         out_stream.write("{0}data = registers[register_name]\n".
           format(indent * 3))
         out_stream.write("{0}get_function = data[0]\n".format(indent * 3))
@@ -2356,6 +2379,7 @@ class Project(Node):
         out_stream.write("{0}value = get_function()\n".format(indent * 3))
         out_stream.write("{0}entry.delete(0, END)\n".format(indent * 3))
         out_stream.write("{0}entry.insert(0, str(value))\n".format(indent * 3))
+	out_stream.write("{0}print ''\n".format(indent * 3))
 
         out_stream.write("\n")
 
@@ -2376,7 +2400,6 @@ class Project(Node):
         file_mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         print("file_mode after='{0:x}'".format(file_mode))
         os.chmod(python_file_name, file_mode)
-
 
     ## @brief Delete the *index*'th sub node from *self
     #  @param self *Project* to delete sub node from
