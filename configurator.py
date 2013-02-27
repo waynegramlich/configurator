@@ -52,7 +52,6 @@ from maker_bus import *       # Serial to MakerBus routines
 
 class Application(Frame):
 
-
     ## The constructor
     #
     # The constructor initializes reads in the data and initializes
@@ -140,8 +139,26 @@ class Application(Frame):
         self.project_root_tree.select()
         self.module_controls_update(None)
 
-        # Open the serial port:
-        device = "/dev/ttyUSB0"
+	# Get command line arguments:
+	arguments = sys.argv
+	del arguments[0]
+	print "arguments=", arguments
+
+	if len(arguments) == 0:
+	    # Open the serial port:
+	    unix_serials = glob.glob("/dev/ttyUSB*")
+	    print "unix_serials=", unix_serials
+            macos_serials = glob.glob("/dev/tty.usbserial-*")
+	    print "macos_serials=", macos_serials
+	    serials = unix_serials + macos_serials
+	    print "serials=", serials
+            serials.sort()
+	    print "serials=", serials
+	    device = serials[0]
+	else:
+	    device = arguments[0]
+	print "device=", device
+
         baud = 115200
         try:
             # Give 
