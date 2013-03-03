@@ -1106,12 +1106,18 @@ class Application(Frame):
                 maker_bus_module.request_begin(module_use.offset + number + 1)
                 if type == "Byte":
                     result = maker_bus_module.request_byte_put(value)
+                elif type == "Int":
+                    result = maker_bus_module.request_int_put(value)
                 elif type == "Logical":
                     result = maker_bus_module.request_logical_put(value)
+                elif type == "Short":
+                    result = maker_bus_module.request_short_put(value)
                 elif type == "UByte":
                     result = maker_bus_module.request_ubyte_put(value)
                 elif type == "UShort":
                     result = maker_bus_module.request_ushort_put(value)
+                elif type == "UInt":
+                    result = maker_bus_module.request_uint_put(value)
                 else:
                     assert False
                 maker_bus_module.request_end()

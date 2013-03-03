@@ -29,7 +29,8 @@ class Maker_Bus_Base:
         self.trace = True
         self.trace_pad = ""
 
-        serial.open()
+	#FIXME: Only open serial if it is not already open:
+        #serial.open()
         serial.flushInput()
         serial.setTimeout(1)
         
@@ -94,9 +95,9 @@ class Maker_Bus_Base:
             request_length = len(request)
             self.request_safe -= request_length
 
+	    # Flush the serial output buffer:
             if trace:
-                print("{0}serial.flush()".format(trace_pad))
-
+                print("{0}Maker_Bus.flush:serial.flush()".format(trace_pad))
             serial.flush()
 
             # Now get a response:
@@ -317,6 +318,16 @@ class Maker_Bus_Base:
             print("{0}<=Maker_Bus.request_end() response={1}". \
               format(trace_pad, self.response))
 
+    def request_int_put(self, int32):
+        """ {Maker_Bus}: Append {int32} to current request in {self}. """
+
+	self.request_uint_put(int32);
+
+    def request_short_put(self, int16):
+        """ {Maker_Bus}: Append {int16} to current request in {self}. """
+
+	self.request_ushort_put(int16);
+
     def request_ubyte_put(self, ubyte):
         """ {Maker_Bus}: Append {ubyte} to current request in {self}. """
 
@@ -328,12 +339,49 @@ class Maker_Bus_Base:
               format(trace_pad, ubyte))
 
         request = self.request
-        request.append(ubyte)
+        request.append(ubyte & 0xff)
 
         if trace:
             self.trace_pad = trace_pad
             print("{0}<=Maker_Bus.request_ubyte_put({1}) request={2}". \
               format(trace_pad, ubyte, request))
+
+    def request_uint_put(self, uint32):
+        """ {Maker_Bus}: Append {int32} to current request in {self}. """
+
+        trace = self.trace
+        if trace:
+            trace_pad = self.trace_pad
+            self.trace_pad = trace_pad + " "
+            print("{0}=>Maker_Bus.request_int_put({1})". \
+	      format(trace_pad, uint32))
+
+	self.request_ubyte_put(uint32 >> 24)
+	self.request_ubyte_put(uint32 >> 16)
+	self.request_ubyte_put(uint32 >> 8)
+	self.request_ubyte_put(uint32)
+
+        if trace:
+            print("{0}<=Maker_Bus.request_int_put({1})". \
+	      format(trace_pad, uint32))
+
+    def request_ushort_put(self, uint16):
+        """ {Maker_Bus}: Append {uint16} to current request in {self}. """
+
+        trace = self.trace
+        if trace:
+            trace_pad = self.trace_pad
+            self.trace_pad = trace_pad + " "
+            print("{0}=>Maker_Bus.request_ushort_put({1})". \
+              format(trace_pad, uint16))
+
+	self.request_ubyte_put(uint16 >> 8)
+	self.request_ubyte_put(uint16)
+
+        if trace:
+            self.trace_pad = trace_pad
+            print("{0}<=Maker_Bus.request_ushort_put({1})". \
+              format(trace_pad, uint16))
 
     def response_begin(self):
         """ {Maker_Bus}: Begin a response sequence. """
@@ -399,10 +447,10 @@ class Maker_Bus_Base:
         """ {Maker_Bus}: Return next unsigned integer from response in
 	    {self}. """
 
-	byte0 = self.response_ushort_get()
-	byte1 = self.response_ushort_get()
-	byte2 = self.response_ushort_get()
-	byte3 = self.response_ushort_get()
+	byte0 = self.response_ubyte_get()
+	byte1 = self.response_ubyte_get()
+	byte2 = self.response_ubyte_get()
+	byte3 = self.response_ubyte_get()
 	result = (byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3
 
         trace = self.trace
@@ -533,7 +581,7 @@ class Maker_Bus_Module:
     def request_byte_put(self, byte):
 	""" {Maker_Bus_Module}: """
 
-        self.maker_bus_base.request_ubyte_put(byte & 0xff)
+        self.maker_bus_base.request_ubyte_put(byte)
 
     def request_character_put(self, character):
 	""" {Maker_Bus_Module}: """
@@ -545,6 +593,11 @@ class Maker_Bus_Module:
 
         self.maker_bus_base.request_end()
 
+    def request_int_put(self, int32):
+	""" {Maker_Bus_Module}: """
+
+        self.maker_bus_base.request_int_put(int32)
+
     def request_logical_put(self, logical):
 	""" {Maker_Bus_Module}: """
 
@@ -553,17 +606,27 @@ class Maker_Bus_Module:
             value = 1
         self.maker_bus_base.request_ubyte_put(value)
 
+    def request_short_put(self, int16):
+	""" {Maker_Bus_Module}: """
+
+        self.maker_bus_base.request_short_put(int16)
+
     def request_ubyte_put(self, ubyte):
 	""" {Maker_Bus_Module}: """
 
         self.maker_bus_base.request_ubyte_put(ubyte & 0xff)
 
-    def request_ushort_put(self, ushort):
+    def request_uint_put(self, uint32):
 	""" {Maker_Bus_Module}: """
 
         # High byte first, followed by low byte:
-        self.request_ubyte_put(ushort >> 8)
-        self.request_ubyte_put(ushort)
+        self.request_uint_put(uint32)
+
+    def request_ushort_put(self, uint16):
+	""" {Maker_Bus_Module}: """
+
+        # High byte first, followed by low byte:
+        self.request_ushort_put(uint16)
 
     def response_begin(self):
 	""" {Maker_Bus_Module}: """
