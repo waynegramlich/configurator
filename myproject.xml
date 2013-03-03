@@ -5,7 +5,7 @@
      Vendor="makerbus.com" Module="RasPi">
       <Module_Use Name="LCD_Duino" Address="128" Offset="0" UID=""
        Vendor="makerbus.com" Module="MBDuino">
-        <Module_Use Name="lcd" Address="0" Offset="0" UID=""
+        <Module_Use Name="lcd" Address="-1" Offset="0" UID=""
          Vendor="sainsmart.com" Module="LCD1602" />
       </Module_Use>
       <Module_Use Name="Grove_Duino" Address="129" Offset="0" UID=""
@@ -51,8 +51,6 @@
         </Module_Use>
       </Module_Use>
       <Module_Use Name="Motor3_Left" Address="133" Offset="0" UID=""
-       Vendor="makerbus.com" Module="Motor3" />
-      <Module_Use Name="Motor3_Right" Address="134" Offset="0" UID=""
        Vendor="makerbus.com" Module="Motor3" />
     </Module_Use>
   </Module_Use>

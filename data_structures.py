@@ -1553,8 +1553,11 @@ class Module_Use(Node):
     def accessible_modules_find(self, modules_table,
       accessible_modules, accessible_module_uses, maker_bus_address, indent):
 
-	print "{0}acc_mod_find({1}, {2}, {3})".format(" " * indent,
-	  self.name, maker_bus_address, self.address)
+	trace = indent >= 0
+	if trace:
+	    trace_indent = " " * indent
+	    print "{0}=>Module_Use: accessible_module_find({1}, {2}, {3})". \
+	      format(trace_indent, self.name, maker_bus_address, self.address)
 
 	# See whether {self} looks like it has a {maker_bus_address}:
         try:
@@ -1562,8 +1565,10 @@ class Module_Use(Node):
             if address >= 0:
 		maker_bus_address = address
 		self.maker_bus_address = maker_bus_address
-                print "{0}maker_bus_address={1]". \
-		  format(" " * indent, maker_bus_address)
+		if trace:
+                    print \
+		      "{0}Module_use.accessible_mod_find:maker_bus_addr={1}". \
+		      format(trace_indent, maker_bus_address)
 	except ValueError:
 	    pass
 	
@@ -1594,12 +1599,20 @@ class Module_Use(Node):
         # to be passed down to the lower modules.
         if module.generate == "Ino_Slave":
             maker_bus_address = self.address
+	    if trace:
+                print "{0}Module_Use: maker_bus_address = {1}". \
+		  format(trace_indent, maker_bus_address)
 
         # Visit all sub *Module_Use*'s as well:
         for sub_module_use in self.module_uses:
             sub_module_use.accessible_modules_find(modules_table,
               accessible_modules, accessible_module_uses, maker_bus_address,
 	      indent + 1)
+
+	if trace:
+	    print \
+	      "{0}<=Module_Use: accessible_module_find({1}, {2}, {3})". \
+	      format(trace_indent, self.name, maker_bus_address, self.address)
 
     ## @brief Generate sketch code for *self* to *out_stream*.
     #  @param self *self* *Module_Use* to generate code for
@@ -2131,11 +2144,15 @@ class Project(Node):
     # This method will write out the Python code for *self*
 
     def python_write(self, modules_table):
+	""" {Project}: Write out the python code for {self} out. """
+
+	trace = False
+	if trace:
+	    print "=>Project.python_write()"
 
         name = self.name
         python_file_name = "{0}.py".format(name)
         indent = "  "
-	print "Generating {0}".format(python_file_name)
 
         # Open the Python output stream:
         out_stream = open(python_file_name, "w")
@@ -2153,9 +2170,13 @@ class Project(Node):
         accessible_modules = {}
         accessible_module_uses = {}
         for module_use in self.module_uses:
-	    print "module_use={0}".format(module_use.name)
+	    if trace:
+		print " module_use={0}".format(module_use.name)
+	    find_indent = -1000
+	    if trace:
+		find_indent = 1
             module_use.accessible_modules_find(modules_table,
-              accessible_modules, accessible_module_uses, -1, 0)
+              accessible_modules, accessible_module_uses, -1, find_indent)
 
         # Sort the modules by name:
         accessible_modules_keys = accessible_modules.keys()
@@ -2189,7 +2210,8 @@ class Project(Node):
               format(indent * 2, accessible_module_use.name.lower(), \
               accessible_module, accessible_module_use.maker_bus_address,
               accessible_module_use.offset)
-	    print "Project.python_write='{0}'".format(line)
+	    if trace:
+		print " Project.python_write: line='{0}'".format(line)
 	    out_stream.write(line)
 	    out_stream.write("\n")
         out_stream.write("\n")
@@ -2338,21 +2360,41 @@ class Project(Node):
         #           data = self.registers[name]
         #           set_function = data[1]
         #          entry = data[3]
+	#	   entry_value = entry.get().lower().strip()
         #          try:
-        #            value = int(entry.get())
+        #            value = int(entry_value)
         #            set_function(value)
         #          except ValueError:
-        #             print "Bad value"
+        #            if entry_value == "true":
+	#	       set_function(1)
+	#	     elif entry_value == "false":
+	#	       set_function(0)
+	#	     elif entry_value == "":
+	#	       set_function(0)
+	#	     else:
+        #	       print "Bad value"
         out_stream.write("{0}def register_click(self, name):\n". \
           format(indent * 1))
         out_stream.write("{0}data = self.registers[name]\n".format(indent * 2))
         out_stream.write("{0}set_function = data[1]\n".format(indent * 2))
         out_stream.write("{0}entry = data[3]\n".format(indent * 2))
+        out_stream.write("{0}entry_value = entry.get().lower().strip()\n". \
+	  format(indent * 2))
         out_stream.write("{0}try:\n".format(indent * 2))
-        out_stream.write("{0}value = int(entry.get())\n".format(indent * 3))
+        out_stream.write("{0}value = int(entry_value)\n".format(indent * 3))
         out_stream.write("{0}set_function(value)\n".format(indent * 3))
         out_stream.write("{0}except ValueError:\n".format(indent * 2))
-        out_stream.write("{0}print \"Bad value\"\n".format(indent * 3))
+        out_stream.write("{0}if entry_value == \"true\":\n".format(indent * 3))
+        out_stream.write("{0}set_function(1)\n".format(indent * 4))
+        out_stream.write("{0}elif entry_value == \"false\":\n". \
+	  format(indent * 3))
+        out_stream.write("{0}set_function(0)\n".format(indent * 4))
+        out_stream.write("{0}elif entry_value == \"\":\n".format(indent * 3))
+        out_stream.write("{0}set_function(0)\n".format(indent * 4))
+        out_stream.write("{0}else:\n".format(indent * 3))
+        out_stream.write( \
+	  "{0}print \"Bad value = '{{0}}'\".format(entry_value)\n". \
+	  format(indent * 4))
         out_stream.write("\n")
 
         # Output:
@@ -2396,10 +2438,17 @@ class Project(Node):
 
         # Set the execute bit:
         file_mode = os.stat(python_file_name).st_mode
-        print("file_mode before'{0:x}'".format(file_mode))
+	if trace:
+	    print(" Project.python_write: file_mode before'{0:x}'". \
+	      format(file_mode))
         file_mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        print("file_mode after='{0:x}'".format(file_mode))
+	if trace:
+	    print(" Project.python_write: file_mode after='{0:x}'". \
+	      format(file_mode))
         os.chmod(python_file_name, file_mode)
+
+	if trace:
+	    print "<=Project.python_write()"
 
     ## @brief Delete the *index*'th sub node from *self
     #  @param self *Project* to delete sub node from

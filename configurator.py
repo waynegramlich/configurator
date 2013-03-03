@@ -29,7 +29,7 @@
 import glob                   # File wild card matching module
 import os                     # Operatin system utilities
 import sys
-print("sys.version_info=", sys.version_info)
+#print("sys.version_info=", sys.version_info)
 if sys.version_info >= (3, 0):
     from tkinter import *     # Graphic User Interface took based ont Tcl/Tk
     import tkinter.filedialog
@@ -142,29 +142,29 @@ class Application(Frame):
 	# Get command line arguments:
 	arguments = sys.argv
 	del arguments[0]
-	print "arguments=", arguments
+	#print "arguments=", arguments
 
 	if len(arguments) == 0:
 	    # Open the serial port:
 	    unix_serials = glob.glob("/dev/ttyUSB*")
-	    print "unix_serials=", unix_serials
+	    #print "unix_serials=", unix_serials
             macos_serials = glob.glob("/dev/tty.usbserial-*")
-	    print "macos_serials=", macos_serials
+	    #print "macos_serials=", macos_serials
 	    serials = unix_serials + macos_serials
-	    print "serials=", serials
+	    #print "serials=", serials
             serials.sort()
-	    print "serials=", serials
+	    #print "serials=", serials
 	    device = serials[0]
 	else:
 	    device = arguments[0]
-	print "device=", device
+	#print "device=", device
 
         baud = 115200
         try:
             # Give 
             serial = Serial(device, baud)
         except SerialException:
-            print("serial connection failed")
+            print("serial connection to '{0}' failed".format(device))
             serial = None
 
         # Did we open the serial connection?
