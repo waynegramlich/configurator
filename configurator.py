@@ -154,7 +154,10 @@ class Application(Frame):
 	    #print "serials=", serials
             serials.sort()
 	    #print "serials=", serials
-	    device = serials[0]
+            if len(serials) == 0:
+                device = "/dev/ttyUSB8"
+            else:
+                device = serials[0]
 	else:
 	    device = arguments[0]
 	#print "device=", device
