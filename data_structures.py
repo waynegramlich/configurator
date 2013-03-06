@@ -2161,6 +2161,8 @@ class Project(Node):
         out_stream.write("#!/usr/bin/python\n\n")
 
         # Output the imports:
+	out_stream.write("import sys\n")
+	out_stream.write("import glob\n")
         out_stream.write("from Tkinter import *\n")
         out_stream.write("from maker_bus import *\n")
         out_stream.write("from serial import *\n")
@@ -2224,9 +2226,18 @@ class Project(Node):
            format(indent * 1))
         out_stream.write("\n")
 
-        out_stream.write("{0}try:\n".format(indent * 2))
-        out_stream.write("{0}serial = Serial(\"/dev/ttyUSB0\", 115200)\n". \
-          format(indent * 3))
+	out_stream.write("{0}arguments = sys.argv\n".format(indent * 2))
+	out_stream.write("{0}del arguments[0]\n".format(indent * 2))
+	out_stream.write("{0}if len(arguments) == 0:\n".format(indent * 2))
+	out_stream.write(("{0}serials = glob.glob(\"/dev/ttyUSB*\") +" + \
+	  " glob.glob(\"/dev/tty.usbserial-*\")\n").format(indent * 3))
+	out_stream.write("{0}serials.sort()\n".format(indent * 3))
+	out_stream.write("{0}device = serials[0]\n".format(indent * 3))
+	out_stream.write("{0}else:\n".format(indent * 2))
+	out_stream.write("{0}device = arguments[0]\n".format(indent * 3))
+        out_stream.write("{0}serial = Serial(device, 115200)\n". \
+          format(indent * 2))
+	out_stream.write("{0}try:\n".format(indent * 2))
         out_stream.write("{0}maker_bus_base = Maker_Bus_Base(serial)\n". \
           format(indent * 3))
         out_stream.write("{0}except SerialException:\n".format(indent * 2))
