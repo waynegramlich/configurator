@@ -5,7 +5,9 @@
 # This package provides the software needed to send and receive
 # MakerBus protocol packets.
 
-import serial
+from serial import *
+import sys
+import glob
 
 ## @class Maker_Bus_Base
 #
@@ -17,8 +19,42 @@ import serial
 
 class Maker_Bus_Base:
 
-    def __init__(self, serial):
+    def __init__(self, serial_name):
         """ {Maker_Bus}: Initialize a Maker_Bus object. """
+
+	if not isinstance(serial_name, str):
+	    # Search command line arguments for pattern "/dev/tty*":
+            argv_serials = []
+            for arg in sys.argv:
+		if arg.find("/dev/tty") == 0:
+		    # Found one:
+		    argv_serials.append(arg)
+	    unix_serials = glob.glob("/dev/ttyUSB*")
+	    macos_serials = glob.glob("/dev/tty.usbserial-*")
+
+	    # Sort everything that we found and concatente them together:
+            argv_serials.sort()
+            unix_serials.sort()
+	    macos_serials.sort()
+	    serials = argv_serials + unix_serials + macos_serials
+
+	    # Squirt out an error message
+            if len(serials) == 0:
+		print "There is no serial port to open"
+		serial_name = None
+            else:
+		# Use the device listed on the command line:
+		serial_name = serials[0]
+
+	# Try to open a serial connection:
+	serial = None
+	if serial_name != None:
+	    try:
+		serial = Serial(serial_name, 115200)
+	    except SerialException:
+		serial = None
+	if serial == None:
+	    print "Unable to open serial port '{0}'".format(serial_name)
 
         self.address = -1
         self.auto_flush = True
@@ -31,8 +67,9 @@ class Maker_Bus_Base:
 
 	#FIXME: Only open serial if it is not already open:
         #serial.open()
-        serial.flushInput()
-        serial.setTimeout(1)
+	if serial != None:
+            serial.flushInput()
+            serial.setTimeout(1)
         
     def auto_flush_set(self, flush_mode):
         """ {Maker_Bus}: This routine will set the auto flush mode for {self}

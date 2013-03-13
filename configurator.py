@@ -162,26 +162,14 @@ class Application(Frame):
 	    device = arguments[0]
 	#print "device=", device
 
-        baud = 115200
-        try:
-            # Give 
-            serial = Serial(device, baud)
-        except SerialException:
-            print("serial connection to '{0}' failed".format(device))
-            serial = None
-
         # Did we open the serial connection?
-        if serial == None:
+        maker_bus_base = Maker_Bus_Base(None)
+        if maker_bus_base.serial == None:
             # No, remember that it did not open:
             maker_bus_base = None
-        else:
-            # Yes, create the *maker_bus_base* and *maker_bus_module*:
-            maker_bus_base = Maker_Bus_Base(serial)
 
         # Remember whether or not we succeeded with the connection:
         self.maker_bus_base = maker_bus_base
-
-
 
     def address_entry_changed(self, string_variable):
         """ Application: This method is called when the address entry
