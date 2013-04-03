@@ -1,0 +1,12 @@
+<Project Name="myproject">
+  <Module_Use Name="Raspberry Pi" Address="-1" Offset="0" UID=""
+   Vendor="raspberrypi.org" Module="Raspberry Pi">
+    <Module_Use Name="RasPi" Address="-1" Offset="0" UID=""
+     Vendor="makerbus.com" Module="RasPi">
+      <Module_Use Name="Motor3_Left" Address="133" Offset="0" UID=""
+       Vendor="makerbus.com" Module="Motor3" />
+      <Module_Use Name="Motor3_Right" Address="134" Offset="0" UID=""
+       Vendor="makerbus.com" Module="Motor3" />
+    </Module_Use>
+  </Module_Use>
+</Project>
