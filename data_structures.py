@@ -2158,7 +2158,7 @@ class Project(Node):
         out_stream = open(python_file_name, "w")
 
         # Output the interpreter header:
-        out_stream.write("#!/usr/bin/python\n\n")
+        out_stream.write("#!/usr/bin/env python\n\n")
 
         # Output the imports:
 	#out_stream.write("import sys\n")

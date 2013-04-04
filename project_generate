@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+# This program will generate the *project*.py file needed for
+# specified *project*.xml file.  Usage:
+#
+#    project_generate *project*.xml
+
+
+# Imports:
+import sys
+import glob
+from data_structures import *
+
+def main():
+    arguments = sys.argv
+    #print("arguments={0}".format(arguments))
+    #print("Hello!\n")
+
+    style = Style(None)
+    xml = XML(style)
+    tags = XML_Check.tags_initialize()
+
+    # Create the root of the selections tree:
+    selections_root_node = Selection("Selections", style)
+
+    # This code needs to be refactored into data_structures.py:
+    vendor_modules = []
+    vendor_module_file_names = glob.glob("Vendors/*/*/*/*.xml")
+    for vendor_module_file_name in vendor_module_file_names:
+	style.file_name_set(vendor_module_file_name)
+	vendor_module_element = xml.read(vendor_module_file_name, "Module")
+	XML_Check.element_check(vendor_module_element, tags)
+	vendor_module = \
+          Module(vendor_module_element, vendor_module_file_name, style)
+	vendor_modules.append(vendor_module)
+    modules_list = vendor_modules
+
+    # This code needs to be refactored into data_structures.py:
+    modules_table = {}
+    for module in modules_list:
+	# Fill in the *modules_table*:      
+	name = module.name
+	vendor = module.vendor
+	module_key = (vendor, name)
+	modules_table[module_key] = module
+
+	# Process the classifications:
+	for classification in module.classifications:
+	    selection = selections_root_node
+	    levels = classification.levels
+	    for level in levels:
+		selection = selection.lookup_or_create(level)
+            selection.module_append(module)
+	    selection.sort()
+
+    # This code needs to be refactored into data_structures.py:
+    project_xml_file_name = arguments[1]
+    project_element = xml.read(project_xml_file_name, "Project")
+    if project_element == None:
+	assert False, "Unable to open '{0}'".format(project_xml_file_name)
+    else:
+	XML_Check.element_check(project_element, tags)
+	project = Project(project_element, modules_table, style)
+
+	project.python_write(modules_table)
+
+main()
+

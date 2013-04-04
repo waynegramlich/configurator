@@ -1,8 +1,8 @@
-#!/bin/python
+#!/usr/bin/env python
 
 from time import sleep
 from maker_bus import *
-from myproject import *
+from billbot import *
 
 class Robot:
 

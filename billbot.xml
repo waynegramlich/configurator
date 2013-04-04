@@ -1,4 +1,4 @@
-<Project Name="myproject">
+<Project Name="billbot">
   <Module_Use Name="Raspberry Pi" Address="-1" Offset="0" UID=""
    Vendor="raspberrypi.org" Module="Raspberry Pi">
     <Module_Use Name="RasPi" Address="-1" Offset="0" UID=""
