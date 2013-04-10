@@ -31,12 +31,15 @@ class Maker_Bus_Base:
 		    argv_serials.append(arg)
 	    unix_serials = glob.glob("/dev/ttyUSB*")
 	    macos_serials = glob.glob("/dev/tty.usbserial-*")
+	    pi_serials = glob.glob("/dev/ttyAMA*")
 
 	    # Sort everything that we found and concatente them together:
             argv_serials.sort()
+	    pi_serials.sort()
             unix_serials.sort()
 	    macos_serials.sort()
-	    serials = argv_serials + unix_serials + macos_serials
+	    serials = argv_serials + unix_serials + macos_serials + pi_serials
+	    print("serials={0}".format(serials))
 
 	    # Squirt out an error message
             if len(serials) == 0:
