@@ -22,10 +22,11 @@ class Maker_Bus_Base:
     def __init__(self, serial_name):
         """ {Maker_Bus}: Initialize a Maker_Bus object. """
 
+	serial_name = None
 	if not isinstance(serial_name, str):
 	    # Search command line arguments for pattern "/dev/tty*":
-            argv_serials = []
-            for arg in sys.argv:
+	    argv_serials = []
+	    for arg in sys.argv:
 		if arg.find("/dev/tty") == 0:
 		    # Found one:
 		    argv_serials.append(arg)
@@ -34,18 +35,18 @@ class Maker_Bus_Base:
 	    pi_serials = glob.glob("/dev/ttyAMA*")
 
 	    # Sort everything that we found and concatente them together:
-            argv_serials.sort()
+	    argv_serials.sort()
 	    pi_serials.sort()
-            unix_serials.sort()
+	    unix_serials.sort()
 	    macos_serials.sort()
 	    serials = argv_serials + unix_serials + macos_serials + pi_serials
 	    print("serials={0}".format(serials))
 
 	    # Squirt out an error message
-            if len(serials) == 0:
+	    if len(serials) == 0:
 		print "There is no serial port to open"
 		serial_name = None
-            else:
+	    else:
 		# Use the device listed on the command line:
 		serial_name = serials[0]
 
@@ -64,6 +65,7 @@ class Maker_Bus_Base:
         self.request = []
         self.request_safe = 0
         self.response = []
+	self.same_address_requests = 0
         self.serial = serial
         self.trace = True
         self.trace_pad = ""
@@ -80,6 +82,8 @@ class Maker_Bus_Base:
             automatically flush each command sequence as it soon as possible.
             When {flush_mode} is {False}, the command sequences are queued
             up until they are explicitly flushed by calling {flush}(). """
+
+	assert isinstance(flush_mode, bool)
 
         trace = self.trace
         if trace:
@@ -318,7 +322,14 @@ class Maker_Bus_Base:
         if self.auto_flush and request_length != 0:
             self.flush()
 
-        if address != self.address:
+        if address == self.address:
+	    if self.same_address_requests >= 8:
+		self.address = -1
+	    else:
+		self.same_address_requests += 1
+
+	if address != self.address:
+	    self.same_address_requests = 0
             self.frame_put(address | 0x100)
             self.address = address
             if (address & 0x80) == 0:
