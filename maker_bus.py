@@ -8,6 +8,7 @@
 from serial import *
 import sys
 import glob
+import time
 
 ## @class Maker_Bus_Base
 #
@@ -20,7 +21,7 @@ import glob
 class Maker_Bus_Base:
 
     def __init__(self, serial_name):
-        """ {Maker_Bus}: Initialize a Maker_Bus object. """
+        """ {Maker_Bus_Base}: Initialize a Maker_Bus object. """
 
 	serial_name = None
 	if not isinstance(serial_name, str):
@@ -74,11 +75,11 @@ class Maker_Bus_Base:
         #serial.open()
 	if serial != None:
             serial.flushInput()
-            serial.setTimeout(1)
+            serial.setTimeout(0.004)
         
     def auto_flush_set(self, flush_mode):
-        """ {Maker_Bus}: This routine will set the auto flush mode for {self}
-            to {flush_mode}.  When {flush_mode} is set to {True}, it will
+        """ {Maker_Bus_Base}: This routine will set the auto flush mode for
+	    {self} to {flush_mode}.  When {flush_mode} is set to {True}, it will
             automatically flush each command sequence as it soon as possible.
             When {flush_mode} is {False}, the command sequences are queued
             up until they are explicitly flushed by calling {flush}(). """
@@ -101,8 +102,16 @@ class Maker_Bus_Base:
             print("{0}<=Maker_Bus.auto_flush({1})".
               format(trace_pad, flush_mode))
 
+    def bus_test(self):
+        """ {Maker_Buse_Base} """
+
+	for count in range(0, 10000):
+	    self.frame_put(0x185)
+	    self.flush()
+	    time.sleep(0.05)
+
     def flush(self):
-        """ {Maker_Bus}: Flush out current request. """
+        """ {Maker_Bus_Base}: Flush out current request. """
 
         trace = self.trace
         if trace:
@@ -186,7 +195,7 @@ class Maker_Bus_Base:
               format(trace_pad, self.response))
 
     def bus_reset(self):
-	""" Maker_Bus_Base: Reset the bus. """
+	""" {Maker_Bus_Base}: Reset the bus. """
 
 	trace = self.trace
 	if trace:
@@ -211,7 +220,7 @@ class Maker_Bus_Base:
 	    print("<=bus_reset()")
 
     def discovery_mode(self):
-        """ Maker_Bus_Base: Perform discovery mode """
+        """ {Maker_Bus_Base}: Perform discovery mode """
 
         trace = self.trace
         if trace:
@@ -249,7 +258,7 @@ class Maker_Bus_Base:
         return ids
 
     def frame_get(self):
-        """ {Maker_Bus}: Return the next frame from the bus connected
+        """ {Maker_Bus_Base}: Return the next frame from the bus connected
             to {self}. """
 
         trace = self.trace
@@ -275,7 +284,7 @@ class Maker_Bus_Base:
         return frame
 
     def frame_put(self, frame):
-        """ {Maker_Bus}: Send frame to the bus connected to {self}. """
+        """ {Maker_Bus_Base}: Send frame to the bus connected to {self}. """
 
         trace = self.trace
         if trace:
@@ -307,7 +316,7 @@ class Maker_Bus_Base:
 
 
     def request_begin(self, address, command):
-        """ {Maker_Bus}: Append {command} to self.request. """
+        """ {Maker_Bus_Base}: Append {command} to self.request. """
 
         trace = self.trace
         if trace:
@@ -333,6 +342,7 @@ class Maker_Bus_Base:
             self.frame_put(address | 0x100)
             self.address = address
             if (address & 0x80) == 0:
+		self.serial.flush()
                 self.frame_get()
 
         request.append(command)
@@ -343,12 +353,12 @@ class Maker_Bus_Base:
             self.trace_pad = trace_pad
 
     def request_byte_put(self, byte):
-        """ {Maker_Bus}: Append {byte} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {byte} to current request in {self}. """
 
 	self.request_ubyte_put(self, byte & 0xff);
 
     def request_end(self):
-        """ Maker_Bus: Indicate that current command is complete. """
+        """ {Maker_Bus_Base}: Indicate that current command is complete. """
 
         trace = self.trace
         if trace:
@@ -370,23 +380,23 @@ class Maker_Bus_Base:
               format(trace_pad, self.response))
 
     def request_int_put(self, int32):
-        """ {Maker_Bus}: Append {int32} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {int32} to current request in {self}. """
 
 	self.request_uint_put(int32);
 
     def request_short_put(self, int16):
-        """ {Maker_Bus}: Append {int16} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {int16} to current request in {self}. """
 
 	self.request_ushort_put(int16);
 
     def request_ubyte_put(self, ubyte):
-        """ {Maker_Bus}: Append {ubyte} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {ubyte} to current request in {self}. """
 
         trace = self.trace
         if trace:
             trace_pad = self.trace_pad
             self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.request_ubyte_put({0})". \
+            print("{0}=>Maker_Bus.request_ubyte_put({1})". \
               format(trace_pad, ubyte))
 
         request = self.request
@@ -398,7 +408,7 @@ class Maker_Bus_Base:
               format(trace_pad, ubyte, request))
 
     def request_uint_put(self, uint32):
-        """ {Maker_Bus}: Append {int32} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {int32} to current request in {self}. """
 
         trace = self.trace
         if trace:
@@ -417,7 +427,7 @@ class Maker_Bus_Base:
 	      format(trace_pad, uint32))
 
     def request_ushort_put(self, uint16):
-        """ {Maker_Bus}: Append {uint16} to current request in {self}. """
+        """ {Maker_Bus_Base}: Append {uint16} to current request in {self}. """
 
         trace = self.trace
         if trace:
@@ -435,7 +445,7 @@ class Maker_Bus_Base:
               format(trace_pad, uint16))
 
     def response_begin(self):
-        """ {Maker_Bus}: Begin a response sequence. """
+        """ {Maker_Bus_Base}: Begin a response sequence. """
 
         trace = self.trace
         if trace:
@@ -451,7 +461,8 @@ class Maker_Bus_Base:
             self.trace_pad = trace_pad
 
     def response_byte_get(self):
-        """ {Maker_Bus}: Return next unsigned byte from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned byte from response
+	     in {self}. """
 
 	ubyte = self.response_ubyte_get()
 	if ubyte & 0x80 != 0:
@@ -459,7 +470,7 @@ class Maker_Bus_Base:
 	return ubyte
 
     def response_end(self):
-        """ {Maker_Bus}: End a response sequence. """
+        """ {Maker_Bus_Base}: End a response sequence. """
 
         trace = self.trace
         if trace:
@@ -479,7 +490,8 @@ class Maker_Bus_Base:
 
 
     def response_byte_get(self):
-        """ {Maker_Bus}: Return next unsigned byte from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned byte from response
+	    in {self}. """
 
 	byte = self.response_ubyte_get()
 	if byte & 0x80 != 0:
@@ -487,7 +499,8 @@ class Maker_Bus_Base:
         return byte
 
     def response_short_get(self):
-        """ {Maker_Bus}: Return next unsigned byte from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned byte from response
+	    in {self}. """
 
 	short= self.response_ushort_get()
 	if short & 0x8000 != 0:
@@ -495,7 +508,7 @@ class Maker_Bus_Base:
         return short
 
     def response_int_get(self):
-        """ {Maker_Bus}: Return next unsigned integer from response in
+        """ {Maker_Bus_Base}: Return next unsigned integer from response in
 	    {self}. """
 
 	byte0 = self.response_ubyte_get()
@@ -514,7 +527,8 @@ class Maker_Bus_Base:
 	return result
 
     def response_ubyte_get(self):
-        """ {Maker_Bus}: Return next unsigned byte from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned byte from response
+	    in {self}. """
 
         response = self.response
 
@@ -536,7 +550,8 @@ class Maker_Bus_Base:
         return ubyte
 
     def response_ushort_get(self):
-        """ {Maker_Bus}: Return next unsigned short from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned short from response
+	    in {self}. """
 
         response = self.response
 
@@ -559,7 +574,8 @@ class Maker_Bus_Base:
         return ushort
 
     def response_uint_get(self):
-        """ {Maker_Bus}: Return next unsigned integer from response in {self}. """
+        """ {Maker_Bus_Base}: Return next unsigned integer from response
+	    in {self}. """
 
         response = self.response
 
@@ -594,7 +610,7 @@ class Maker_Bus_Base:
 # register and function access to the module.
 
 class Maker_Bus_Module:
-    """ This represents a single module on the bus: """
+    """ {Maker_Bus_Module}: This represents a single module on the bus: """
 
     def __init__(self, maker_bus_base, address, offset):
         """ {Maker_Bus_Module}: Initialize {self} to contain {maker_bus_base}

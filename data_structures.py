@@ -1775,6 +1775,7 @@ class Module_Use(Node):
 # sketch.
 
 class Sketch_Generator:
+    """ {Sketch_Generator} """
 
     ## @brief Sketch_Generate constructor
     #  @param self *Sketch_Generator* to initialize
@@ -1787,6 +1788,7 @@ class Sketch_Generator:
     # *module_use_element*
 
     def __init__(self, name, modules_table, style):
+	""" {Sketch_Generator} """
 
         # Check argument types:
         assert isinstance(name, str)
@@ -1800,6 +1802,8 @@ class Sketch_Generator:
     #  @result *bool* *True* if any *Module_Use* offset is changed.
 
     def ino_slave_write(self, root_module_use):
+	""" {Sketch_Generator} """
+
         modules_table = self.modules_table
         unique_modules = self.unique_modules
 
@@ -1820,15 +1824,15 @@ class Sketch_Generator:
                 
             local_library_directory = \
               os.path.join(libraries_directory, "{0:t}_Local".format(module))
-            #print "local_library_directory={0}".format(local_library_directory)
+            print "local_library_directory={0}".format(local_library_directory)
             if not os.path.isdir(local_library_directory):
                 # Create *local_library_directory*:
                 os.makedirs(local_library_directory)
 
             remote_library_directory = \
               os.path.join(libraries_directory, "{0:t}_Remote".format(module))
-            #print "remote_library_directory={0}". \
-            #  format(remote_library_directory)
+            print "remote_library_directory={0}". \
+              format(remote_library_directory)
             if not os.path.isdir(remote_library_directory):
                 # Create *remote_library_directory*:
                 os.makedirs(remote_library_directory)
@@ -1864,7 +1868,7 @@ class Sketch_Generator:
 
         slave_directory = \
           os.path.join("sketchbook", "{0}_Slave".format(self.name))
-        #print "slave_directory={0}".format(slave_directory)
+        print "slave_directory={0}".format(slave_directory)
         if not os.path.exists(slave_directory):
             os.makedirs(slave_directory)
 
@@ -1874,7 +1878,7 @@ class Sketch_Generator:
         # Set *debug* to *True* to force debugging code to be generated:
         debug = True
             
-        #print "slave_ino_source={0}".format(slave_ino_source)
+        print "slave_ino_source={0}".format(slave_ino_source)
         out_stream = open(slave_ino_source, "w")
 
         # Output the #includes:

@@ -1,4 +1,4 @@
-<Module Name="Motor3" Vendor="makerbus.com" Generate="Python"
+<Module Name="Motor3" Vendor="makerbus.com" Generate="Ino_Slave"
  Address_RE="^[0-9]+$" Address_Type="MakerBus"
  Brief="Motor controller">
   <Overview>

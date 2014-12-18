@@ -541,8 +541,11 @@ class Application(Frame):
                     ids = maker_bus_base.discovery_mode()
                     print("bus_scan=", ids)
                 elif function_number == -3:
-                    # Upload all
+                    # Upload all:
                     pass
+		elif function_number == -4:
+                    # Bus Test:
+		    maker_bus_base.bus_test()
 		else:
                     assert False, "function_number={0}".format(function_number)
         else:

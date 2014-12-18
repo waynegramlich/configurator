@@ -52,6 +52,8 @@
       </Module_Use>
       <Module_Use Name="Motor3_Left" Address="133" Offset="0" UID=""
        Vendor="makerbus.com" Module="Motor3" />
+      <Module_Use Name="Bus_Bridge_Encoders_Sonar" Address="33" Offset="0" UID=""
+       Vendor="makerbus.com" Module="Bus_Bridge_Encoders_Sonar" />
     </Module_Use>
   </Module_Use>
 </Project>
