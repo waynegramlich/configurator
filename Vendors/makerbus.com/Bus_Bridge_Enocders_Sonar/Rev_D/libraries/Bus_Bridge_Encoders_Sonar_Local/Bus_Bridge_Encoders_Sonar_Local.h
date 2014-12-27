@@ -48,7 +48,7 @@ class Bus_Bridge_Encoders_Sonar : public Bus_Module {
     void encoders_latch();
 
   //////// Edit begins here: PRIVATE
- private:
+  //private:
     Logical _led;
     Integer _encoder1;
     Integer _encoder2;
