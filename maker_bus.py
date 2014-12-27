@@ -355,7 +355,11 @@ class Maker_Bus_Base:
     def request_byte_put(self, byte):
         """ {Maker_Bus_Base}: Append {byte} to current request in {self}. """
 
-	self.request_ubyte_put(self, byte & 0xff);
+	if byte >= 0:
+	    ubyte = byte
+	else:
+	    ubyte = 0xff + byte + 1
+	self.request_ubyte_put(self, ubyte);
 
     def request_end(self):
         """ {Maker_Bus_Base}: Indicate that current command is complete. """
@@ -379,15 +383,27 @@ class Maker_Bus_Base:
             print("{0}<=Maker_Bus.request_end() response={1}". \
               format(trace_pad, self.response))
 
-    def request_int_put(self, int32):
+    def request_integer_put(self, integer):
         """ {Maker_Bus_Base}: Append {int32} to current request in {self}. """
 
-	self.request_uint_put(int32);
+	# Python 3.0 has infinite precision *int*'s, so we we have to
+	# convert carefully:
+	if integer >= 0:
+	    uinteger = integer
+	else:
+	    uinteger = 0xffffffff + integer + 1
+	self.request_uinteger_put(uinteger);
 
-    def request_short_put(self, int16):
+    def request_short_put(self, short):
         """ {Maker_Bus_Base}: Append {int16} to current request in {self}. """
 
-	self.request_ushort_put(int16);
+	# Python 3.0 has infinite precision *int*'s, so we we have to
+	# convert carefully:
+	if short >= 0:
+	    ushort = short
+	else:
+	    ushort = 0xffff + short + 1
+	self.request_ushort_put(ushort);
 
     def request_ubyte_put(self, ubyte):
         """ {Maker_Bus_Base}: Append {ubyte} to current request in {self}. """
@@ -407,42 +423,45 @@ class Maker_Bus_Base:
             print("{0}<=Maker_Bus.request_ubyte_put({1}) request={2}". \
               format(trace_pad, ubyte, request))
 
-    def request_uint_put(self, uint32):
-        """ {Maker_Bus_Base}: Append {int32} to current request in {self}. """
+    def request_uinteger_put(self, uinteger):
+        """ {Maker_Bus_Base}: Append {uinteger} to current request in
+            {self}. """
 
         trace = self.trace
         if trace:
             trace_pad = self.trace_pad
             self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.request_int_put({1})". \
-	      format(trace_pad, uint32))
+            print("{0}=>Maker_Bus.request_uinteger_put({1})". \
+	      format(trace_pad, uinteger))
 
-	self.request_ubyte_put(uint32 >> 24)
-	self.request_ubyte_put(uint32 >> 16)
-	self.request_ubyte_put(uint32 >> 8)
-	self.request_ubyte_put(uint32)
+	assert isinstance(uinteger, int)
+	self.request_ubyte_put((uinteger >> 24) & 0xff)
+	self.request_ubyte_put((uinteger >> 16) & 0xff)
+	self.request_ubyte_put((uinteger >> 8)  & 0xff)
+	self.request_ubyte_put( uinteger        & 0xff)
 
         if trace:
-            print("{0}<=Maker_Bus.request_int_put({1})". \
-	      format(trace_pad, uint32))
+            print("{0}<=Maker_Bus.request_uinteger_put({1})". \
+	      format(trace_pad, uinteger))
 
-    def request_ushort_put(self, uint16):
-        """ {Maker_Bus_Base}: Append {uint16} to current request in {self}. """
+    def request_ushort_put(self, ushort):
+        """ {Maker_Bus_Base}: Append {ushort} to current request in {self}. """
 
         trace = self.trace
         if trace:
             trace_pad = self.trace_pad
             self.trace_pad = trace_pad + " "
             print("{0}=>Maker_Bus.request_ushort_put({1})". \
-              format(trace_pad, uint16))
+              format(trace_pad, ushort))
 
-	self.request_ubyte_put(uint16 >> 8)
-	self.request_ubyte_put(uint16)
+	assert isinstance(ushort, int)
+	self.request_ubyte_put((ushort >> 8) & 0xff)
+	self.request_ubyte_put( ushort       & 0xff)
 
         if trace:
             self.trace_pad = trace_pad
             print("{0}<=Maker_Bus.request_ushort_put({1})". \
-              format(trace_pad, uint16))
+              format(trace_pad, ushort))
 
     def response_begin(self):
         """ {Maker_Bus_Base}: Begin a response sequence. """
@@ -489,42 +508,44 @@ class Maker_Bus_Base:
             self.trace_pad = trace_pad
 
 
+    def response_integer_get(self):
+        """ {Maker_Bus_Base}: Return next unsigned byte from response
+	    in {self}. """
+
+	# Python 3.0 has infinte precesion *int*'s, so we have to
+	# carefully convert to negative numbers:
+	uinteger = self.response_uinteger_get()
+	if (uinteger & 0x8000000) == 0:
+	    integer = uinteger
+	else:
+	    integer = -((uinteger & 0x7fffffff) ^ 0x7fffffff) - 1
+	return integer
+
     def response_byte_get(self):
         """ {Maker_Bus_Base}: Return next unsigned byte from response
 	    in {self}. """
 
-	byte = self.response_ubyte_get()
-	if byte & 0x80 != 0:
-	    byte |= 0xffffff00
+	# Python 3.0 has infinte precesion *int*'s, so we have to
+	# carefully convert to negative numbers:
+	ubyte = self.response_ubyte_get()
+	if ubyte & 0x80 == 0:
+	    byte = ubyte
+	else:
+	    byte = -((ubyte & 0x7f) ^ 0x7f) - 1
         return byte
 
     def response_short_get(self):
         """ {Maker_Bus_Base}: Return next unsigned byte from response
 	    in {self}. """
 
-	short= self.response_ushort_get()
-	if short & 0x8000 != 0:
-	    short |= 0xffff0000
+	# Python 3.0 has infinte precesion *int*'s, so we have to
+	# carefully convert to negative numbers:
+	ushort= self.response_ushort_get()
+	if ushort & 0x8000 == 0:
+	    short = ushort
+	else:
+	    short = -((ushort & 0x7fff) ^ 0x7fff) - 1
         return short
-
-    def response_int_get(self):
-        """ {Maker_Bus_Base}: Return next unsigned integer from response in
-	    {self}. """
-
-	byte0 = self.response_ubyte_get()
-	byte1 = self.response_ubyte_get()
-	byte2 = self.response_ubyte_get()
-	byte3 = self.response_ubyte_get()
-	result = (byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3
-
-        trace = self.trace
-        if trace:
-            trace_pad = self.trace_pad
-            self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.response_int_get() result={1}". \
-              format(trace_pad, result))
-
-	return result
 
     def response_ubyte_get(self):
         """ {Maker_Bus_Base}: Return next unsigned byte from response
@@ -549,6 +570,25 @@ class Maker_Bus_Base:
 
         return ubyte
 
+    def response_uinteger_get(self):
+        """ {Maker_Bus_Base}: Return next unsigned integer from response in
+	    {self}. """
+
+	byte0 = self.response_ubyte_get()
+	byte1 = self.response_ubyte_get()
+	byte2 = self.response_ubyte_get()
+	byte3 = self.response_ubyte_get()
+	result = (byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3
+
+        trace = self.trace
+        if trace:
+            trace_pad = self.trace_pad
+            self.trace_pad = trace_pad + " "
+            print("{0}=>Maker_Bus.response_uinteger_get() result={1}". \
+              format(trace_pad, result))
+
+	return result
+
     def response_ushort_get(self):
         """ {Maker_Bus_Base}: Return next unsigned short from response
 	    in {self}. """
@@ -572,33 +612,6 @@ class Maker_Bus_Base:
             self.trace_pad = trace_pad
 
         return ushort
-
-    def response_uint_get(self):
-        """ {Maker_Bus_Base}: Return next unsigned integer from response
-	    in {self}. """
-
-        response = self.response
-
-        trace = self.trace
-        if trace:
-            trace_pad = self.trace_pad
-            self.trace_pad = trace_pad + " "
-            print("{0}=>Maker_Bus.response_uint_get() response={1}". \
-              format(trace_pad, response))
-
-	byte3 = self.response_ubyte_get()
-	byte2 = self.response_ubyte_get()
-	byte1 = self.response_ubyte_get()
-	byte0 = self.response_ubyte_get()
-	
-        uint = (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0
-
-        if trace:
-            print("{0}<=Maker_Bus.response_uint_get()=>{1}". \
-              format(trace_pad, uint))
-            self.trace_pad = trace_pad
-
-        return uint
 
 ## @class Maker_Bus_Module
 #
@@ -660,10 +673,10 @@ class Maker_Bus_Module:
 
         self.maker_bus_base.request_end()
 
-    def request_int_put(self, int32):
+    def request_integer_put(self, int32):
 	""" {Maker_Bus_Module}: """
 
-        self.maker_bus_base.request_int_put(int32)
+        self.maker_bus_base.request_integer_put(int32)
 
     def request_logical_put(self, logical):
 	""" {Maker_Bus_Module}: """
@@ -683,11 +696,11 @@ class Maker_Bus_Module:
 
         self.maker_bus_base.request_ubyte_put(ubyte & 0xff)
 
-    def request_uint_put(self, uint32):
+    def request_uinteger_put(self, uint32):
 	""" {Maker_Bus_Module}: """
 
         # High byte first, followed by low byte:
-        self.request_uint_put(uint32)
+        self.request_uinteger_put(uint32)
 
     def request_ushort_put(self, uint16):
 	""" {Maker_Bus_Module}: """
@@ -725,10 +738,10 @@ class Maker_Bus_Module:
 
 	return self.maker_bus_base.response_short_get()
 
-    def response_int_get(self):
+    def response_integer_get(self):
 	""" {Maker_Bus_Module}: """
 
-	return self.maker_bus_base.response_int_get()
+	return self.maker_bus_base.response_integer_get()
 
     def response_ubyte_get(self):
 	""" {Maker_Bus_Module}: """
@@ -740,10 +753,10 @@ class Maker_Bus_Module:
 
 	return self.maker_bus_base.response_ushort_get()
 
-    def response_uint_get(self):
+    def response_uinteger_get(self):
 	""" {Maker_Bus_Module}: """
 
-	return self.maker_bus_base.response_uint_get()
+	return self.maker_bus_base.response_uinteger_get()
 
     def response_end(self):
 	""" {Maker_Bus_Module}: """

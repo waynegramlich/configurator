@@ -472,14 +472,14 @@ class Application(Frame):
                             maker_bus_module.request_byte_put(number)
                         elif type == "Short":
                             maker_bus_module.request_short_put(number)
-                        elif type == "Int":
-                            maker_bus_module.request_int_put(number)
+                        elif type == "Integer":
+                            maker_bus_module.request_integer_put(number)
                         elif type == "UByte":
                             maker_bus_module.request_ubyte_put(number)
                         elif type == "UShort":
                             maker_bus_module.request_ushort_put(number)
-                        elif type == "UInt":
-                            maker_bus_module.request_uint_put(number)
+                        elif type == "UInteger":
+                            maker_bus_module.request_uinteger_put(number)
                         else:
                             assert False, "Finish dispatch table"
 
@@ -507,8 +507,8 @@ class Application(Frame):
                             number = maker_bus_module.response_ubyte_get()
                         elif type == "UShort":
                             number = maker_bus_module.response_ushort_get()
-                        elif type == "UInt":
-                            number = maker_bus_module.response_uint_get()
+                        elif type == "UInteger":
+                            number = maker_bus_module.response_uinteger_get()
                         else:
                             assert False, "Finish dispatch table"
                         call_entry_text += prefix + str(number)
@@ -711,23 +711,21 @@ class Application(Frame):
                 result = maker_bus_module.response_byte_get()
             elif type == "Logical":
                 result = int(maker_bus_module.response_logical_get())
-            elif type == "Byte":
-                result = maker_bus_module.response_byte_get()
+            elif type == "Integer":
+                result = maker_bus_module.response_integer_get()
             elif type == "Short":
                 result = maker_bus_module.response_short_get()
-            elif type == "Int":
-                result = maker_bus_module.response_int_get()
             elif type == "UByte":
                 result = maker_bus_module.response_ubyte_get()
             elif type == "UShort":
                 result = maker_bus_module.response_ushort_get()
-            elif type == "UInt":
-                result = maker_bus_module.response_uint_get()
+            elif type == "UInteger":
+                result = maker_bus_module.response_uinteger_get()
             else:
                 assert False, "Type={0}".format(type)
             get_entry = self.get_entry
             get_entry.delete(0, END)
-            get_entry.insert(0, "{0}".format(result))
+            get_entry.insert(0, "{0} (0x{0:x})".format(result))
         else:
             self.warn(why_not)
 
@@ -1095,26 +1093,34 @@ class Application(Frame):
             maker_bus_module = self.maker_bus_module_get(module_use)
 
             set_entry_text = self.set_entry.get()
-            if set_entry_text.isdigit():
-                value = int(set_entry_text)
-                maker_bus_module.request_begin(module_use.offset + number + 1)
-                if type == "Byte":
-                    result = maker_bus_module.request_byte_put(value)
-                elif type == "Int":
-                    result = maker_bus_module.request_int_put(value)
-                elif type == "Logical":
-                    result = maker_bus_module.request_logical_put(value)
-                elif type == "Short":
-                    result = maker_bus_module.request_short_put(value)
-                elif type == "UByte":
-                    result = maker_bus_module.request_ubyte_put(value)
-                elif type == "UShort":
-                    result = maker_bus_module.request_ushort_put(value)
-                elif type == "UInt":
-                    result = maker_bus_module.request_uint_put(value)
-                else:
-                    assert False
-                maker_bus_module.request_end()
+	    set_entry_fields = set_entry_text.split()
+	    if len(set_entry_fields) > 0:
+		try:
+		    # Setting second argument to 0, allows *int* to parse
+		    # hexadecimal constants.  Weird.:
+		    value = int(set_entry_fields[0], 0)
+		    maker_bus_module.request_begin(
+		      module_use.offset + number + 1)
+		    if type == "Byte":
+			result = maker_bus_module.request_byte_put(value)
+		    elif type == "Integer":
+			result = maker_bus_module.request_integer_put(value)
+		    elif type == "Logical":
+			result = maker_bus_module.request_logical_put(value)
+		    elif type == "Short":
+			result = maker_bus_module.request_short_put(value)
+		    elif type == "UByte":
+			result = maker_bus_module.request_ubyte_put(value)
+		    elif type == "UShort":
+ 			result = maker_bus_module.request_ushort_put(value)
+		    elif type == "UInteger":
+			result = maker_bus_module.request_uinteger_put(value)
+		    else:
+			assert False
+		    maker_bus_module.request_end()
+                except ValueError:
+		    self.warn(
+		      "'{0}' is not a valid number".format(set_entry_text))
             else:
                 self.warn("'{0}' is not a valid number".format(set_entry_text))
         else:

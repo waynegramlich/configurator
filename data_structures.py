@@ -650,15 +650,15 @@ class Function(Node):
     #
     #        // NAME: BRIEF
     #        RT1 MODULE::FUNCTION(PT1 PN1,...,PTn PNn,RT2 *RN2,...,RTn *RNn) {
-    #            Maker_Bus_Module::command_begin(NUMBER);
-    #            Maker_Bus_Module::PT1_put(P1);
+    #            Bus_Module::command_begin(NUMBER);
+    #            Bus_Module::PT1_put(P1);
     #            ...
-    #            Maker_Bus_Module::PTn_put(Pn);
-    #            RT1 R1 = Maker_Bus_Module::RT1_get();
-    #            *RN2 = Maker_Bus_Module::RT2_get();
+    #            Bus_Module::PTn_put(Pn);
+    #            RT1 R1 = Bus_Module::RT1_get();
+    #            *RN2 = Bus_Module::RT2_get();
     #            ...
-    #            *RNn = Maker_Bus_Module::RTn_get();
-    #            Maker_Bus_Module::command_end();
+    #            *RNn = Bus_Module::RTn_get();
+    #            Bus_Module::command_end();
     #            return RN1;
     #        }
     #
@@ -695,32 +695,32 @@ class Function(Node):
         #print "format_string='{0}'".format(format_string)
         out_stream.write(format_string.format(self, style))
 
-        # Output: "Maker_Bus_Module::command_begin(NUMBER);"
-        out_stream.write("{0:i}Maker_Bus_Module::command_begin({1});\n". \
+        # Output: "Bus_Module::command_begin(NUMBER);"
+        out_stream.write("{0:i}Bus_Module::command_begin({1});\n". \
           format(style, number))
 
         # Output the code to send the parameters over to the module:
         for parameter in parameters:
-            # Output: Maker_Bus_Module::PTi_put(PNi);
-            out_stream.write("{0:i}Maker_Bus_Module::{1}_put({2:n});\n". \
+            # Output: Bus_Module::PTi_put(PNi);
+            out_stream.write("{0:i}Bus_Module::{1}_put({2:n});\n". \
               format(style, parameter.type.lower(), parameter))
 
         # Deal with RPC returned results:
         for index in range(results_length):
             result = results[index]
             if index == 0:
-                # Output: "RT1 RN1 = Maker_Bus_Module::RT1_get();"
+                # Output: "RT1 RN1 = Bus_Module::RT1_get();"
                 out_stream.write("{0:i}{1} {2} = ". \
                   format(style, result.type, result.name.lower()))
             else:
-                # Output: "*RNi = Maker_Bus_Module::RTi_get();"
+                # Output: "*RNi = Bus_Module::RTi_get();"
                 out_stream.write("{0:i}*{1} = ". \
                   format(style, result.type, result.name.lower()))
-            out_stream.write("Maker_Bus_Module::{0}_get();\n". \
+            out_stream.write("Bus_Module::{0}_get();\n". \
               format(result.type.lower()))
 
-        # Output:  Maker_Bus_Module::command_end();
-        out_stream.write("{0:i}Maker_Bus_Module::command_end();\n". \
+        # Output:  Bus_Module::command_end();
+        out_stream.write("{0:i}Bus_Module::command_end();\n". \
           format(style))
 
         # Output: "return RN1;"
@@ -1022,7 +1022,7 @@ class Module(Node):
 
         # Output the include files:
         #FIXME: This should not be wired in like this!!!
-        out_stream.write("#include <MB7.h>\n")
+        out_stream.write("#include <Bus.h>\n")
         out_stream.write("\n")
 
         # Write out a fence:
@@ -1031,7 +1031,7 @@ class Module(Node):
             out_stream.write("\n")
 
         # Start the class declaration:
-        out_stream.write("class {0:t} : public Maker_Bus_Module".format(self))
+        out_stream.write("class {0:t} : public Bus_Module".format(self))
         sub_class = self.sub_class
         if sub_class != None and with_fences:
             out_stream.write(", public {0} ".format(sub_class))
@@ -1110,7 +1110,7 @@ class Module(Node):
         out_stream.write("#include <{0:t}_Local.h>\n".format(self))
 
         #FIXME: This #include should not be hard wired in!!!
-        out_stream.write("#include <MB7.h>\n")
+        out_stream.write("#include <Bus.h>\n")
         out_stream.write("\n")
 
         # Output a fenced region for top-level includes, typedef's, etc.:
@@ -1173,7 +1173,7 @@ class Module(Node):
         out_stream.write("// Generated file!\n")
         out_stream.write("#include <{0}_Remote.h>\n".format(self.name))
         #KLUDGE:
-        out_stream.write("#include <MB7.h>\n")
+        out_stream.write("#include <Bus.h>\n")
         out_stream.write("\n")
 
         # Output the constructor with a fence in the middle:
@@ -1401,7 +1401,7 @@ class Module(Node):
         style = self.style
 
         # Output the class:
-        out_stream.write("class {0:t}(Maker_Bus_Module):\n\n".format(self))
+        out_stream.write("class {0:t}(Bus_Module):\n\n".format(self))
         style.indent_adjust(1)
 
         # Output the initializer:
@@ -1410,7 +1410,7 @@ class Module(Node):
           format(style))
         style.indent_adjust(1)
         out_stream.write( \
-          "{0:i}Maker_Bus_Module.__init__(self, maker_bus, address, offset)\n".
+          "{0:i}Bus_Module.__init__(self, maker_bus, address, offset)\n".
           format(style))
         style.indent_adjust(-1)
         out_stream.write("\n")
@@ -1883,7 +1883,7 @@ class Sketch_Generator:
 
         # Output the #includes:
         out_stream.write("// #includes:\n")
-        out_stream.write("#include \"MB7.h\"\n")
+        out_stream.write("#include \"Bus.h\"\n")
         for module_key in unique_modules:
             #print "module_key=", module_key
             module = modules_table[module_key]
@@ -1894,7 +1894,7 @@ class Sketch_Generator:
 
         # Output one object variable per *module_use*:
         out_stream.write("// Object variables:\n")
-        out_stream.write("Maker_Bus maker_bus;\n")
+        out_stream.write("Bus maker_bus;\n")
         for module_key in unique_modules:
             #print "module_key=", module_key
             module = modules_table[module_key]
@@ -1907,7 +1907,7 @@ class Sketch_Generator:
 
         # Output command_process() declaration:
         out_stream.write("// Forward declaration of command_process():\n")
-        out_stream.write("UByte command_process(const Maker_Bus *maker_bus,\n")
+        out_stream.write("UByte command_process(const Bus *maker_bus,\n")
         out_stream.write(" UByte command, Logical execute_mode);\n")
         out_stream.write("\n")
 
@@ -1930,7 +1930,7 @@ class Sketch_Generator:
         out_stream.write("{0:e}\n\n".format(style))
 
         # Output the command processor routine:
-        out_stream.write("UByte command_process(Maker_Bus *maker_bus, " + \
+        out_stream.write("UByte command_process(Bus *maker_bus, " + \
           "UByte command, Logical execute_mode){0:b}".format(style))
         out_stream.write("{0:i}switch (command){0:b}".format(style))
 
@@ -2230,7 +2230,7 @@ class Project(Node):
            format(indent * 1))
         out_stream.write("\n")
 
-        out_stream.write("{0}maker_bus_base = Maker_Bus_Base(None)\n". \
+        out_stream.write("{0}maker_bus_base = Bus_Base(None)\n". \
           format(indent * 2))
         out_stream.write("{0}self.maker_bus_base = maker_bus_base\n". \
           format(indent * 2))
@@ -2631,9 +2631,9 @@ class Register(Node):
         # Output the "get" method code.  It looks like this:
         #        // REGISTER_get: BRIEF
         #        TYPE MODULE::REGISTER_get() {
-        #            Maker_Bus_Module::command_begin(NUMBER);
-        #            TYPE NAME = Maker_Bus_Module::TYPE_get();
-        #            Maker_Bus_Module::command_end();
+        #            Bus_Module::command_begin(NUMBER);
+        #            TYPE NAME = Bus_Module::TYPE_get();
+        #            Bus_Module::command_end();
         #            return NAME;
         #        }
 
@@ -2645,16 +2645,16 @@ class Register(Node):
         out_stream.write("{0:i}{1:t} {2:t}::{3}(){0:b}". \
           format(style, self, module, get_name))
 
-        #            Maker_Bus_Module::command_begin(NUMBER);
-        out_stream.write("{0:i}Maker_Bus_Module::command_begin({1});\n". \
+        #            Bus_Module::command_begin(NUMBER);
+        out_stream.write("{0:i}Bus_Module::command_begin({1});\n". \
           format(style, number))
 
-        # Output: "TYPE NAME = Maker_Bus_Module::TYPE_get()";
-        out_stream.write("{0:i}{1} {2} = Maker_Bus_Module::{3}_get();\n". \
+        # Output: "TYPE NAME = Bus_Module::TYPE_get()";
+        out_stream.write("{0:i}{1} {2} = Bus_Module::{3}_get();\n". \
           format(style, type, name.lower(), type.lower()))
 
-        # Output: "Maker_Bus_Module::command_end();"
-        out_stream.write("{0:i}Maker_Bus_Module::command_end();\n". \
+        # Output: "Bus_Module::command_end();"
+        out_stream.write("{0:i}Bus_Module::command_end();\n". \
           format(style))
 
         # Output: "return NAME;"
@@ -2666,9 +2666,9 @@ class Register(Node):
         # Output the "set" routine.  It looks as follows:
         #        // REGISTER_set: BRIEF
         #        void REGISTER_SET(TYPE NAME) {
-        #            Maker_Bus_Module::command_begin(NUMBER + 1);
-        #            Maker_Bus_Module::TYPE_put(NAME);
-        #            Maker_Bus_Module::command_end();
+        #            Bus_Module::command_begin(NUMBER + 1);
+        #            Bus_Module::TYPE_put(NAME);
+        #            Bus_Module::command_end();
         #        }
 
         # Output: "// REGISTER_set: BRIEF":
@@ -2679,16 +2679,16 @@ class Register(Node):
         out_stream.write("{0:i}void {1:t}::{2}({3:t} {3:n}){0:b}". \
           format(style, module, set_name, self))
 
-        # Output: Maker_Bus_Module::command_begin(NUMBER + 1);
-        out_stream.write("{0:i}Maker_Bus_Module::command_begin({1});\n". \
+        # Output: Bus_Module::command_begin(NUMBER + 1);
+        out_stream.write("{0:i}Bus_Module::command_begin({1});\n". \
           format(style, number + 1))
         
-        # Output: Maker_Bus_Module::TYPE_set(NAME);
-        out_stream.write("{0:i}Maker_Bus_Module::{1}_put({2});\n". \
+        # Output: Bus_Module::TYPE_set(NAME);
+        out_stream.write("{0:i}Bus_Module::{1}_put({2});\n". \
           format(style, type.lower(), name.lower()))
 
-        # Output: Maker_Bus_Module::command_end();
-        out_stream.write("{0:i}Maker_Bus_Module::command_end();\n". \
+        # Output: Bus_Module::command_end();
+        out_stream.write("{0:i}Bus_Module::command_end();\n". \
           format(style))
 
         # Output the closing brace:
@@ -3227,7 +3227,7 @@ def main():
     # Kludge:
     arduino_dir = "../arduino/"
     sketchbook_dir = arduino_dir + "sketchbook/"
-    sketch_dir = sketchbook_dir + "MB7_Slave/"
+    sketch_dir = sketchbook_dir + "Bus_Slave/"
     libraries_dir = sketchbook_dir + "libraries/"
     lcd32_local_dir = libraries_dir + "LCD32_Local/"
     lcd32_remote_dir = libraries_dir + "LCD32_Remote/"

@@ -14,4 +14,57 @@
       This register controls the on-board LED.
     </Description>
   </Register>
+  <Register Name="encoder1" Type="Integer" Number="2"
+   Brief="Encoder 1">
+    <Description>
+      This register is associated with the first encoder.
+    </Description>
+  </Register>
+  <Register Name="encoder2" Type="Integer" Number="4"
+   Brief="Encoder 2">
+    <Description>
+      This register is associated with the second encoder.
+    </Description>
+  </Register>
+  <Function Name="encoders_reset" Number="6"
+   Brief="Reset both encoders to zero.">
+    <Description>
+      This function will reset both encoders to zero.
+    </Description>
+  </Function>
+  <Function Name="encoders_latch" Number="7"
+   Brief="Cause both encoder values to be latched.">
+    <Description>
+      This function will cause the encoder values to be latched.
+      The next time either the encoder1 or encoder2 register is
+      accessed, the latched value is returned.  After that non-
+      latched values are returned.
+    </Description>
+  </Function>
+  <Register Name="motor1" Type="Byte" Number="8"
+   Brief="Motor 1">
+    <Description>
+      This register is associated with the first encoder.
+    </Description>
+  </Register>
+  <Register Name="motor2" Type="Byte" Number="10"
+   Brief="Motor 1">
+    <Description>
+      This register is associated with the first encoder.
+    </Description>
+  </Register>
+  <Register Name="motor1_reverse" Type="Logical" Number="12"
+   Brief="Toggle motor direction.">
+    <Description>
+      This register causes the moter to go in the opposite direct
+      direction when given a positive value.
+    </Description>
+  </Register>
+  <Register Name="motor2_reverse" Type="Logical" Number="14"
+   Brief="Toggle motor direction.">
+    <Description>
+      This register causes the moter to go in the opposite direct
+      direction when given a positive value.
+    </Description>
+  </Register>
 </Module>
