@@ -160,7 +160,7 @@ class Application(Frame):
                 device = serials[0]
 	else:
 	    device = arguments[0]
-	#print "device=", device
+	print("serial device={0}".format(device))
 
         # Did we open the serial connection?
         maker_bus_base = Maker_Bus_Base(None)

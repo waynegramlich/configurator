@@ -44,27 +44,45 @@
   <Register Name="motor1" Type="Byte" Number="8"
    Brief="Motor 1">
     <Description>
-      This register is associated with the first encoder.
+      This register is specifies the motor1  speed.
     </Description>
   </Register>
   <Register Name="motor2" Type="Byte" Number="10"
-   Brief="Motor 1">
+   Brief="Motor 2">
     <Description>
-      This register is associated with the first encoder.
+      This register is specifis the motor2 speed.
     </Description>
   </Register>
   <Register Name="motor1_reverse" Type="Logical" Number="12"
    Brief="Toggle motor direction.">
     <Description>
-      This register causes the moter to go in the opposite direct
+      This register causes motor 1 to go in the opposite direct
       direction when given a positive value.
     </Description>
   </Register>
   <Register Name="motor2_reverse" Type="Logical" Number="14"
    Brief="Toggle motor direction.">
     <Description>
-      This register causes the moter to go in the opposite direct
+      This register causes motor 2 to go in the opposite direct
       direction when given a positive value.
+    </Description>
+  </Register>
+  <Register Name="encoder1_reverse" Type="Logical" Number="16"
+   Brief="Toggle encoder direction.">
+    <Description>
+      This register causes encoder 1 to go in the opposite direction.
+    </Description>
+  </Register>
+  <Register Name="encoder2_reverse" Type="Logical" Number="18"
+   Brief="Toggle encoder direction.">
+    <Description>
+      This register causes encoder 2 to go in the opposite direction.
+    </Description>
+  </Register>
+  <Register Name="motors_encoders_swap" Type="Logical" Number="20"
+   Brief="Toggle encoder direction.">
+    <Description>
+      This register causes the motors and encoders to be swapped.
     </Description>
   </Register>
 </Module>

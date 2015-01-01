@@ -292,6 +292,7 @@ class Function(Node):
     # function from *function_element* and stuffs it into *self*.
 
     def __init__(self, function_element, style):
+	""" *Function*: """
 
         # Check argument type:
         assert isinstance(function_element, ET.Element)
@@ -358,6 +359,7 @@ class Function(Node):
     #     "routine_name(parameter_names, ...) => result_names, ...
 
     def __format__(self, fmt):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(fmt, str)
@@ -445,6 +447,7 @@ class Function(Node):
     #  * RTi is the i'th Result Type
 
     def cpp_header_write(self, module, out_stream):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(module, Module)
@@ -487,6 +490,7 @@ class Function(Node):
     #  * RTi is the i'th Result Type
 
     def cpp_local_source_write(self, module, out_stream):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(module, Module)
@@ -566,6 +570,7 @@ class Function(Node):
     #  * RTi is the i'th Result Type
 
     def ino_slave_write(self, offset, variable_name, out_stream):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(offset, int)
@@ -673,6 +678,7 @@ class Function(Node):
     #  * RTi is the i'th Result Type
 
     def cpp_remote_source_write(self, module, out_stream):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(module, Module)
@@ -760,6 +766,7 @@ class Function(Node):
     #  * RTi is the i'th Result Type
 
     def python_write(self, out_stream):
+	""" *Function*: """
 
         # Check argument types:
         assert isinstance(out_stream, file)
@@ -2726,9 +2733,9 @@ class Register(Node):
         # Output the case for the set method:
         stream.write("{0:i}case {1}:{0:b}".format(style, offset + number + 1))
         stream.write("{0:i}// {1:s}: {2}\n".format(style, self, brief))
-        stream.write("{0:i}if (execute_mode){0:b}".format(style))
         stream.write("{0:i}{1} {2} = maker_bus->{3}_get();\n". \
           format(style, type, name, type.lower()))
+        stream.write("{0:i}if (execute_mode){0:b}".format(style))
         stream.write("{0:i}{1}.{2:s}({2:n});\n". \
           format(style, module_name.lower(), self))
         stream.write("{0:e}".format(style))
