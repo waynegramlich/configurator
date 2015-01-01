@@ -12,12 +12,12 @@ Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   led_set(1);
   encoder1_set(0);
   encoder2_set(0);
-  encoder1_reverse_set((Logical)1);
-  encoder2_reverse_set((Logical)1);
+  encoder1_reverse_set((Logical)0);
+  encoder2_reverse_set((Logical)0);
   motor1_set(0);
   motor2_set(0);
-  motor1_reverse_set((Logical)0);
-  motor2_reverse_set((Logical)0);
+  motor1_reverse_set((Logical)1);
+  motor2_reverse_set((Logical)1);
   motors_encoders_swap_set((Logical)1);
   //////// Edit ends here: CONSTRUCTOR
 }
